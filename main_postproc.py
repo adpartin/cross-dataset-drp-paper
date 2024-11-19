@@ -58,39 +58,52 @@ logging.getLogger().addHandler(console_handler)
 # -----------------------------------
 # Aggregate and save raw infer preds
 # -----------------------------------
-def collect_and_save_preds(models_paths_list: List,
-                           outdir: Path,
-                           subset_type: str,
-                           stage: str) -> None:
+def collect_and_save_raw_preds(models_paths_list: List,
+                               outdir: Path,
+                               subset_type: str,
+                               stage: str) -> None:
     """ Collect and save inference predictions for all models. """
+    # breakpoint()
 
-    assert subset_type ['val', 'test'], f"Invalid 'subset_type' ({subset_type})"
-    assert stage ['train', 'infer'], f"Invalid 'stage' ({subset_type})"
+    assert subset_type in ['val', 'test'], f"Invalid 'subset_type' ({subset_type})"
+    assert stage in ['train', 'infer'], f"Invalid 'stage' ({subset_type})"
+
+    extra_cols = ['model', 'src', 'trg', 'set', 'split']
 
     logging.info('\nSave raw model predictions into new files.')
-    preds_fname = 'test_y_data_predicted.csv' ##
-    # preds_fname = 'val_y_data_predicted.csv' ##
-    # preds_fname = f'{subset_type}_y_data_predicted.csv' ##
-    # out_preds_dir = outdir / 'test_preds' ##
-    out_preds_dir = outdir / f'{subset_type}_preds' ##
+    preds_fname = f'{subset_type}_y_data_predicted.csv'
+    out_preds_dir = outdir / f'{subset_type}_preds'
     os.makedirs(out_preds_dir, exist_ok=True)
 
     for model_dir in models_paths_list:
         model_name = model_dir.name.lower()
         logging.info(model_name)
-        # infer_path = model_dir / 'improve_output/infer' ##
-        stage_path = model_dir / f'improve_output/{stage}' ##
+        stage_path = model_dir / f'improve_output/{stage}'
         exps = sorted(stage_path.glob('*'))
+
         for i, exp_path in enumerate(exps):
             src = str(exp_path.name).split("-")[0]
-            trg = str(exp_path.name).split("-")[1]
+            # trg = str(exp_path.name).split("-")[1]
+            trg = str(exp_path.name).split("-")[1] if '-' in str(exp_path.name) else None
             splits = sorted(exp_path.glob('*'))
+
             for i, split_path in enumerate(splits):
                 sp = split_path.name.split('split_')[1]
                 try:
                     df = pd.read_csv(split_path / preds_fname, sep=',')
-                    df['model'] = model_name
-                    fname = f'{src}_{trg}_split_{sp}_{model_name}.csv'
+                    org_cols = df.columns.tolist()
+                    df['model'] = model_name  # extra col
+                    df['src'] = src  # extra col
+                    df['trg'] = trg  # extra col
+                    df['set']= 'val' if trg is None else 'test'
+                    df['split'] = sp  # extra col
+                    if trg is None:
+                        # Val set Predictions
+                        fname = f'{src}_split_{sp}_{model_name}.csv'
+                    else:
+                        # Test set Predictions
+                        fname = f'{src}_{trg}_split_{sp}_{model_name}.csv'
+                    df = df[extra_cols + org_cols]
                     df.to_csv(out_preds_dir / fname, index=False)
                 except FileNotFoundError:
                     warnings.warn(f'File not found! {split_path / preds_fname}',
@@ -102,6 +115,7 @@ def collect_and_save_preds(models_paths_list: List,
 # ----------------------------------
 def agg_runtimes(models_paths_list: List, outdir: Path) -> None:
     """ Runtimes for all models and stages. """
+    # breakpoint()
 
     logging.info('\nAggregate and save runtimes.')
     res_fname = 'runtimes.csv'
@@ -137,9 +151,13 @@ def agg_runtimes(models_paths_list: List, outdir: Path) -> None:
 # Aggregate scores from all models
 # --------------------------------
 def agg_scores(models_paths_list: List, outdir: Path) -> None:
+    """ ... """
+    # breakpoint()
+
     logging.info('\nAggregate and save performance scores.')
     res_fname = 'all_scores.csv'
-    out_fname = 'all_models_' + res_fname
+    # out_fname = 'all_models_' + res_fname
+    out_fname = 'all_models_' + 'test_scores.csv'
 
     agg_df_list = []
     missing_files = []
@@ -172,6 +190,9 @@ def agg_scores(models_paths_list: List, outdir: Path) -> None:
 # Runtime plots
 # ------------------------------------------------
 def plot_runtimes(models_paths_list: List, outdir: Path) -> None:
+    """ ... """
+    # breakpoint()
+
     plot_runtime_outdir = outdir / 'plot_runtimes'
     os.makedirs(plot_runtime_outdir, exist_ok=True)
 
@@ -233,7 +254,8 @@ def plot_runtimes(models_paths_list: List, outdir: Path) -> None:
 
 
 # breakpoint()
-collect_and_save_infer_preds(models_paths_list, outdir)
+collect_and_save_raw_preds(models_paths_list, outdir, subset_type='val', stage='train')
+collect_and_save_raw_preds(models_paths_list, outdir, subset_type='test', stage='infer')
 agg_runtimes(models_paths_list, outdir)
 agg_scores(models_paths_list, outdir)
 plot_runtimes(models_paths_list, outdir)
