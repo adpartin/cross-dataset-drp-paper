@@ -11,9 +11,9 @@ import logging
 import os
 import warnings
 from pathlib import Path
+from pprint import pprint
 from typing import List
 
-from pprint import pprint
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -40,6 +40,10 @@ os.makedirs(outdir, exist_ok=True)
 main_models_path = filepath / '../alex/models'  # dir containing the collection of models
 models_paths_list  = sorted(main_models_path.glob('*'))  # list of paths to the models
 
+# Cell and drug col names
+canc_col_name = 'improve_sample_id'
+drug_col_name = 'improve_chem_id'
+y_col_name = 'auc'
 
 # Set up logging
 logging.basicConfig(
@@ -68,6 +72,7 @@ def collect_and_save_raw_preds(models_paths_list: List,
     assert subset_type in ['val', 'test'], f"Invalid 'subset_type' ({subset_type})"
     assert stage in ['train', 'infer'], f"Invalid 'stage' ({subset_type})"
 
+    cols = [canc_col_name, drug_col_name, y_col_name, f'{y_col_name}_true', f'{y_col_name}_pred']
     extra_cols = ['model', 'src', 'trg', 'set', 'split']
 
     logging.info('\nSave raw model predictions into new files.')
@@ -78,7 +83,7 @@ def collect_and_save_raw_preds(models_paths_list: List,
     for model_dir in models_paths_list:
         model_name = model_dir.name.lower()
         logging.info(model_name)
-        stage_path = model_dir / f'improve_output/{stage}'
+        stage_path = model_dir / 'improve_output' / f'{stage}'
         exps = sorted(stage_path.glob('*'))
 
         for i, exp_path in enumerate(exps):
@@ -91,7 +96,11 @@ def collect_and_save_raw_preds(models_paths_list: List,
                 sp = split_path.name.split('split_')[1]
                 try:
                     df = pd.read_csv(split_path / preds_fname, sep=',')
-                    org_cols = df.columns.tolist()
+                    # org_cols = df.columns.tolist()
+                    if not all([True if c in df.columns else False for c in cols]):
+                        # print(f'Model {model_name} missing some of the required columns: {cols}')
+                        continue
+                    df = df[cols]
                     df['model'] = model_name  # extra col
                     df['src'] = src  # extra col
                     df['trg'] = trg  # extra col
@@ -103,7 +112,8 @@ def collect_and_save_raw_preds(models_paths_list: List,
                     else:
                         # Test set Predictions
                         fname = f'{src}_{trg}_split_{sp}_{model_name}.csv'
-                    df = df[extra_cols + org_cols]
+                    # df = df[extra_cols + org_cols]
+                    df = df[extra_cols + cols]
                     df.to_csv(out_preds_dir / fname, index=False)
                 except FileNotFoundError:
                     warnings.warn(f'File not found! {split_path / preds_fname}',
@@ -151,7 +161,7 @@ def agg_runtimes(models_paths_list: List, outdir: Path) -> None:
 # Aggregate scores from all models
 # --------------------------------
 def agg_scores(models_paths_list: List, outdir: Path) -> None:
-    """ ... """
+    """ Note! This is replaced with compute_scores_from_averaged_splits() """
     # breakpoint()
 
     logging.info('\nAggregate and save performance scores.')
@@ -253,10 +263,10 @@ def plot_runtimes(models_paths_list: List, outdir: Path) -> None:
     return None
 
 
-# breakpoint()
-collect_and_save_raw_preds(models_paths_list, outdir, subset_type='val', stage='train')
-collect_and_save_raw_preds(models_paths_list, outdir, subset_type='test', stage='infer')
+breakpoint()
 agg_runtimes(models_paths_list, outdir)
 agg_scores(models_paths_list, outdir)
 plot_runtimes(models_paths_list, outdir)
+collect_and_save_raw_preds(models_paths_list, outdir, subset_type='val', stage='train')
+collect_and_save_raw_preds(models_paths_list, outdir, subset_type='test', stage='infer')
 
