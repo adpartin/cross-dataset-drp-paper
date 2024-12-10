@@ -1,4 +1,4 @@
-""" This script does several things:
+""" This script:
 - Collects and renames raw predictions from CSA runs of different models and
   saves them into the same direcotory.
 - Aggregates runtime info from CSA runs of different models.
@@ -12,12 +12,17 @@ import os
 import warnings
 from pathlib import Path
 from pprint import pprint
-from typing import List
+from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+
+from improvelib.metrics import compute_metrics
+
+import time
+start = time.time()
 
 filepath = Path(__file__).parent
 # filepath = Path(os.path.abspath(''))
@@ -37,8 +42,17 @@ os.makedirs(outdir, exist_ok=True)
 # drug_col_name = "improve_chem_id"
 
 # main_models_path = filepath / 'models'  # dir containing the collection of models
-main_models_path = filepath / '../alex/models'  # dir containing the collection of models
+# main_models_path = filepath / '../alex/models'  # dir containing the collection of models
+main_models_path = filepath / '../run/v1.1'  # dir containing the collection of models
 models_paths_list  = sorted(main_models_path.glob('*'))  # list of paths to the models
+
+# Filter models
+models_paths_list = [p for p in models_paths_list if (p/'improve_output').exists()]
+exclude_models = ['pathdsp']
+models_paths_list = [
+    path for path in models_paths_list
+    if not any(exclude_name in path.name for exclude_name in exclude_models)
+]
 
 # Cell and drug col names
 canc_col_name = 'improve_sample_id'
@@ -66,19 +80,25 @@ def collect_and_save_raw_preds(models_paths_list: List,
                                outdir: Path,
                                subset_type: str,
                                stage: str) -> None:
-    """ Collect and save inference predictions for all models. """
+    """ Collect and save inference predictions for all models.
+    The predictions can be from val (train stage) or test data (infer stage).
+    """
     # breakpoint()
 
     assert subset_type in ['val', 'test'], f"Invalid 'subset_type' ({subset_type})"
-    assert stage in ['train', 'infer'], f"Invalid 'stage' ({subset_type})"
+    # assert stage in ['train', 'infer'], f"Invalid 'stage' ({subset_type})"
+    assert stage in ['models', 'infer'], f"Invalid 'stage' ({subset_type})"
+
+    preds_fname = f'{subset_type}_y_data_predicted.csv'
+    out_preds_dir = outdir / f'{subset_type}_preds'
+    os.makedirs(out_preds_dir, exist_ok=True)
 
     cols = [canc_col_name, drug_col_name, y_col_name, f'{y_col_name}_true', f'{y_col_name}_pred']
     extra_cols = ['model', 'src', 'trg', 'set', 'split']
 
     logging.info('\nSave raw model predictions into new files.')
-    preds_fname = f'{subset_type}_y_data_predicted.csv'
-    out_preds_dir = outdir / f'{subset_type}_preds'
-    os.makedirs(out_preds_dir, exist_ok=True)
+
+    missing_files = []
 
     for model_dir in models_paths_list:
         model_name = model_dir.name.lower()
@@ -104,7 +124,7 @@ def collect_and_save_raw_preds(models_paths_list: List,
                     df['model'] = model_name  # extra col
                     df['src'] = src  # extra col
                     df['trg'] = trg  # extra col
-                    df['set']= 'val' if trg is None else 'test'
+                    df['set'] = 'val' if trg is None else 'test'  # extra col
                     df['split'] = sp  # extra col
                     if trg is None:
                         # Val set Predictions
@@ -116,9 +136,130 @@ def collect_and_save_raw_preds(models_paths_list: List,
                     df = df[extra_cols + cols]
                     df.to_csv(out_preds_dir / fname, index=False)
                 except FileNotFoundError:
-                    warnings.warn(f'File not found! {split_path / preds_fname}',
-                                  UserWarning)
+                    # warnings.warn(f'File not found! {split_path / preds_fname}',
+                    #               UserWarning)
+                    logging.warning(f'File not found! {split_path / preds_fname}')
+                    missing_files.append(split_path / preds_fname)
+
+    with open(out_preds_dir / 'missing_files.csv', 'w') as f:
+        for i in missing_files:
+            f.write(f'{i}\n')
+
     return None
+
+
+# -----------------------------------
+# Aggregate train data samples
+# -----------------------------------
+def collect_and_save_response_data(models_paths_list: List,
+                                   outdir: Path,
+                                   # subset_type: str
+                                   ) -> None:
+    """ Collect and save raw response data (not predictions) for all models.
+    The predictions can be for train, val, or test data.
+    """
+    # breakpoint()
+
+    out_preds_dir = outdir / 'y_data'
+    os.makedirs(out_preds_dir, exist_ok=True)
+
+    logging.info('\nSave raw ydata into new files.')
+
+    for model_dir in models_paths_list:
+        model_name = model_dir.name.lower()
+        logging.info(model_name)
+        stage_path = model_dir / 'improve_output' / 'preprocess'
+        exps = sorted(stage_path.glob('*'))
+
+        for i, exp_path in enumerate(exps):
+            src = str(exp_path.name).split("-")[0]
+            trg = str(exp_path.name).split("-")[1] if '-' in str(exp_path.name) else None
+
+            if src == trg:
+
+                splits = sorted(exp_path.glob('*'))
+                for i, split_path in enumerate(splits):
+                    sp = split_path.name.split('split_')[1]
+
+                    for stage in ['train', 'val', 'test']:
+                        df = pd.read_csv(split_path / f'{stage}_y_data.csv', sep=',')
+                        fname = f'{model_name}_{src}_split_{sp}_{stage}.csv'
+                        logging.info(fname)
+                        df.to_csv(out_preds_dir / fname, index=False)
+                del splits, split_path
+
+            elif src != trg:
+                fname = f'{model_name}_{trg}_all.csv'
+                outpath = out_preds_dir / fname
+                if outpath.exists():
+                    logging.info(f'{fname} -- already exists')
+                    continue
+                logging.info(fname)
+                df = pd.read_csv(exp_path / 'split_0' / 'test_y_data.csv', sep=',')
+                df.to_csv(outpath, index=False)
+
+    return None
+
+
+# -----------------------------------
+# Compute and aggregate val scores
+# -----------------------------------
+def agg_val_scores(outdir: Union[Path, str]='.',
+                   models: Optional[List]=None,
+                   sources: Optional[List]=None):
+    """ Compute and aggregate val scores for multiple models (used to compute
+    weights for ensmebled predictions).
+
+    Load raw predictions computed on val data from all [model, source, split]
+    combinations and compute performance scores. Combine results from multiple
+    models. Save the resulting DataFrame, which will be used to compute weights
+    for weighted prediction averaging (weighted ensemble predictions).
+
+    Args:
+    """
+    # breakpoint()
+
+    # Glob pred files
+    preds_dirname = 'val_preds'
+    preds_dir = filepath / preds_dirname
+    pred_files = sorted(preds_dir.glob('*'))
+
+    # Extract unique sources and model names
+    # File pattenr: <SOURCE>_split_<#>_<MODEL>.csv
+    if models is None:
+        models = sorted(set([f.stem.split('_')[-1] for f in pred_files]))
+    if sources is None:
+        sources = sorted(set([f.stem.split('_')[0] for f in pred_files]))
+
+    rr = []  # list of dicts containing [model, source, split]
+    for model in models:  # model
+
+        for source in sources:  # source
+            files = sorted(preds_dir.glob(f'{source}_split_*_{model}*'))
+
+            for fname in files:  # filename for all [source, model] combos
+                split = fname.stem.split('split_')[1].split('_')[0]  # split
+                print(f'{model}; {source}; {split}')
+                pdf = pd.read_csv(fname)  # load raw preds
+                scores = compute_metrics(
+                    y_true=pdf['auc_true'], y_pred=pdf['auc_pred'],
+                    metric_type='regression')
+                metrics = list(scores.keys())
+                scores['model'] = model
+                scores['source'] = source
+                scores['split'] = split
+                rr.append(scores)  # append dict
+
+    # Aggregate data into a DataFrame
+    df = pd.DataFrame(rr)
+    df['set'] = 'val'  # indicate that scores computed for val data
+    extra_cols = [c for c in df.columns if c not in metrics]
+    df = df[extra_cols + metrics]
+    df = df.sort_values(['model', 'source', 'split'], ascending=True)
+
+    df.to_csv(outdir / 'val_scores_agg.csv', index=False)
+    return df
+
 
 # ----------------------------------
 # Aggregate runtimes from all models
@@ -195,7 +336,6 @@ def agg_scores(models_paths_list: List, outdir: Path) -> None:
     return None
 
 
-
 # ------------------------------------------------
 # Runtime plots
 # ------------------------------------------------
@@ -263,10 +403,24 @@ def plot_runtimes(models_paths_list: List, outdir: Path) -> None:
     return None
 
 
-breakpoint()
+# breakpoint()
+# collect_and_save_response_data(models_paths_list, outdir=outdir)
 agg_runtimes(models_paths_list, outdir)
-agg_scores(models_paths_list, outdir)
+# agg_scores(models_paths_list, outdir)
 plot_runtimes(models_paths_list, outdir)
-collect_and_save_raw_preds(models_paths_list, outdir, subset_type='val', stage='train')
+# collect_and_save_raw_preds(models_paths_list, outdir, subset_type='val', stage='train')
+# collect_and_save_raw_preds(models_paths_list, outdir, subset_type='test', stage='infer')
+collect_and_save_raw_preds(models_paths_list, outdir, subset_type='val', stage='models')
 collect_and_save_raw_preds(models_paths_list, outdir, subset_type='test', stage='infer')
 
+# Compute and aggregated val scores for multiple models (load if file already exists)
+# breakpoint()
+val_scores_fpath = outdir / 'val_scores_agg.csv'
+if val_scores_fpath.exists():
+    val_scores = pd.read_csv(val_scores_fpath)
+else:
+    val_scores = agg_val_scores(outdir)
+
+end = time.time()
+print(f'Runtime: {(end - start) / 60} mins')
+print('Done.')

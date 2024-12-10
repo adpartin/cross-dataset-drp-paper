@@ -4,15 +4,19 @@ import argparse
 import logging
 import os
 from pathlib import Path
+from pprint import pprint
 from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
+from scipy.stats import pearsonr, spearmanr
 
 # import seaborn as sns
 # import matplotlib.pyplot as plt
 
 from improvelib.metrics import compute_metrics
+# from improvelib.workflows.utils.csa.csa_utils import apply_decimal_to_dataframe
+
 
 filepath = Path(__file__).parent
 # filepath = Path(os.path.abspath(''))  # ipynb
@@ -20,40 +24,16 @@ print(filepath)
 
 # Arg parser
 parser = argparse.ArgumentParser(description='Ensemble.')
-# parser.add_argument('--datadir',
-#                     default='./agg_results',
-#                     type=str,
-#                     help='Dir containing the aggregated results from all models.')
-# parser.add_argument('--filename',
-#                     default='./all_model_all_scores.csv',
-#                     type=str,
-#                     help='File name containing aggregated results from all models.')
-# parser.add_argument('--models_dir',
-#                     default='../alex/models',
-#                     type=str,
-#                     help='Dir with raw data results.')
-# ----------------------------------------------------------------
-# parser.add_argument('--preds_dirname',
-#                     default='agg_results/preds',
-#                     type=str,
-#                     help='Dir containing raw prediction files.')
-# parser.add_argument('--scores_filename',
-#                     default='agg_results/all_models_all_scores.csv',
-#                     type=str,
-#                     help='File name containing the aggregated performance scores.')
 parser.add_argument('--outdir',
                     default='.',
                     type=str,
                     help='Output dir.')
 args = parser.parse_args()
-# filename = Path(args.models_dir)
+
 outdir = Path(args.outdir)
-# preds_dirname = Path(args.preds_dirname)
-# scores_filename = Path(args.scores_filename)
 os.makedirs(outdir, exist_ok=True)
 
 weights_dir = outdir / 'weights'
-# weighted_preds_dir = outdir / 'weighted_preds'
 averaged_preds_dir = outdir / 'preds_averaged'
 averaged_splits_dir = outdir / 'splits_averaged'
 
@@ -76,79 +56,312 @@ console_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(
 logging.getLogger().addHandler(console_handler)
 
 
-# -----------------------------------------------
-# Compute model weights for ensemble predictions -- weight based on val performance
-# -----------------------------------------------
-
-def agg_val_scores(outdir: Union[Path, str]='.',
-                   models: Optional[List]=None,
-                   sources: Optional[List]=None):
-    """ Compute and aggregate val scores for multiple models.
-
-    Load raw predictions computed on val data from all [model, source, split]
-    combinations and compute performance scores. Combine results from multiple
-    models. Save the resulting DataFrame, which will be used to compute weights
-    for weighted prediction averaging (weighted ensemble predictions).
+def apply_decimal_to_dataframe(df: pd.DataFrame, decimal_places: int=4):
+    """
+    Applies a specified number of decimal places to all numeric columns in a
+    DataFrame, handling potential errors.
 
     Args:
+        df (pd.DataFrame): DataFrame to modify
+        decimal_places (int): The desired number of decimal places
+
+    Returns:
+        modified DataFrame with the specified decimal format applied where possible
     """
-    breakpoint()
+
+    for col in df.select_dtypes(include='number').columns:
+        try:
+            # Round values to the specified number of decimal places
+            df[col] = df[col].round(decimal_places)
+        except Exception as e:
+            print(f"Error formatting column '{col}': {e}")
+
+    return df
+
+
+
+
+
+
+
+
+def compute_scores_from_averaged_splits(
+    outdir: Union[Path, str],
+    models: Optional[List]=None,
+    sources: Optional[List]=None,
+    targets: Optional[List]=None,
+    filtering: Optional[str]=None
+):
+    """
+    The split-averaging approach, computes scores for each split and then
+    averages the scores across splits.
+    """
+    # breakpoint()
+
+    assert filtering in ['drug_blind', 'cell_blind', 'disjoint', None], f"Invalid 'filtering' ({filtering})"
+
+    os.makedirs(outdir, exist_ok=True)
 
     # Glob pred files
-    preds_dirname = 'val_preds'
+    preds_dirname = 'test_preds'
     preds_dir = filepath / preds_dirname
     pred_files = sorted(preds_dir.glob('*'))
+
+    def valid_fname(fname):
+        if len(fname.stem.split('_')) < 3:
+            return False
+        return True if fname.stem.split('_')[2] == 'split' else False
 
     # Extract unique sources and model names
     # File pattenr: <SOURCE>_split_<#>_<MODEL>.csv
     if models is None:
-        models = sorted(set([f.stem.split('_')[-1] for f in pred_files]))
+        models = sorted(set([f.stem.split('_')[4] for f in pred_files if valid_fname(f)]))
     if sources is None:
-        sources = sorted(set([f.stem.split('_')[0] for f in pred_files]))
+        sources = sorted(set([f.stem.split('_')[0] for f in pred_files if valid_fname(f)]))
+    if targets is None:
+        targets = sorted(set([f.stem.split('_')[1] for f in pred_files if valid_fname(f)]))
 
-    rr = []  # list of dicts containing [model, source, split]
+    logging.info('\nCompute scores from averaged splits.')
+    logging.info(f'models: {models}')
+    logging.info(f'sources: {sources}')
+    logging.info(f'targets: {targets}')
+
+    # Y data
+    y_data_dir = filepath / 'y_data' 
+
+    dfs = []
+
     for model in models:  # model
+        model_dfs = []
+        jj = {}  # aux dict to aggeragte scores for each split
 
-        for source in sources:  # source
-            files = sorted(preds_dir.glob(f'{source}_split_*_{model}*'))
+        for src in sources:  # source
+            for trg in targets:  # target
 
-            for fname in files:  # filename for all [source, model] combos
-                split = fname.stem.split('split_')[1].split('_')[0]
-                print(f'{model}; {source}; {split}')
-                pdf = pd.read_csv(fname)  # load raw preds
-                scores = compute_metrics(
-                    y_true=pdf['auc_true'], y_pred=pdf['auc_pred'],
-                    metric_type='regression')
-                metrics = list(scores.keys())
-                scores['model'] = model
-                scores['source'] = source
-                scores['split'] = split
-                rr.append(scores)  # append dict
+                files = sorted(preds_dir.glob(f'{src}*{trg}*{model}*'))
 
-    # Aggregate data into a DataFrame
-    df = pd.DataFrame(rr)
-    df['set'] = 'val'  # indicate that scores computed for val data
-    extra_cols = [c for c in df.columns if c not in metrics]
-    df = df[extra_cols + metrics]
-    df = df.sort_values(['model', 'source', 'split'], ascending=True)
+                for fname in files:  # filename for all [source, target, model] splits
+                    logging.info(f'Loading {fname}')
+                    split = int(fname.stem.split('split_')[1].split('_')[0])
+                    pdf = pd.read_csv(fname)  # preds dataframe
 
-    df.to_csv(outdir / 'val_scores_agg.csv', index=False)
-    return df
+                    if filtering is not None:
+
+                        columns_to_load = ['source', canc_col_name, drug_col_name, y_col_name]
+                        src_data = pd.read_csv(y_data_dir / f'{model}_{src}_split_{split}_train.csv', usecols=columns_to_load)
+                        if src == trg:
+                            trg_data = pd.read_csv(y_data_dir / f'{model}_{src}_split_{split}_test.csv', usecols=columns_to_load)
+                        else:
+                            trg_data = pd.read_csv(y_data_dir / f'{model}_{trg}_all.csv', usecols=columns_to_load)
+
+                        if filtering == 'drug_blind' or filtering == 'disjoint':
+                            src_drugs = set(src_data[drug_col_name])
+                            trg_drugs = set(trg_data[drug_col_name])
+                            unq_trg_drugs = trg_drugs - src_drugs
+                            if not pdf.empty:
+                                pdf = pdf[pdf[drug_col_name].isin(unq_trg_drugs)].reset_index(drop=True)
+
+                        if filtering == 'cell_blind' or filtering == 'disjoint':
+                            src_cells = set(src_data[canc_col_name])
+                            trg_cells = set(trg_data[canc_col_name])
+                            unq_trg_cells = trg_cells - src_cells
+                            if not pdf.empty:
+                                pdf = pdf[pdf[canc_col_name].isin(unq_trg_cells)].reset_index(drop=True)
+
+                    # if not pdf.empty:
+                    y_true = pdf[f'{y_col_name}_true'].values
+                    y_pred = pdf[f'{y_col_name}_pred'].values
+                    sc = compute_metrics(y_true, y_pred, metric_type='regression')
+                    jj[split] = sc
+
+                # Convert dict to df, and aggregate dfs
+                df = pd.DataFrame(jj)
+                df = df.stack(dropna=False).reset_index()
+                df.columns = ['met', 'split', 'value']
+                df['src'] = src
+                df['trg'] = trg
+                df['model'] = model
+                if df.empty is False:
+                    model_dfs.append(df)
+
+        # breakpoint()
+        model_scores = pd.concat(model_dfs, axis=0).reset_index(drop=True)
+        if filtering is not None:
+            model_scores.to_csv(outdir / f"{model}_scores_{filtering}.csv", index=False)
+        else:
+            model_scores.to_csv(outdir / f"{model}_scores.csv", index=False)
+
+        dfs.append(model_scores)
+        del model_dfs, pdf, jj, df
+
+    # Concat dfs and save
+    scores = pd.concat(dfs, axis=0)
+    if filtering is not None:
+        scores.to_csv(outdir / f"all_models_scores_{filtering}.csv", index=False)
+    else:
+        scores.to_csv(outdir / "all_models_scores.csv", index=False)
+
+    return scores
 
 
-# Compute and aggregated val scores for multiple models (load if file already exists)
-# breakpoint()
-val_scores_fpath = outdir / 'val_scores_agg.csv'
-if val_scores_fpath.exists():
-    val_scores = pd.read_csv(val_scores_fpath)
-else:
-    val_scores = agg_val_scores(outdir)
+breakpoint()
+# models = ['graphdrp']
+models = None
+sources = None
+targets = None
+# sources = ['CCLE', 'gCSI']
+# targets = ['CCLE', 'gCSI']
+# sources = ['CTRPv2', 'GDSCv1']
+# targets = ['CCLE', 'CTRPv2', 'GDSCv1']
+# sources = [ 'GDSCv2']
+# targets = [ 'GDSCv1']
+filtering=None
+# filtering='cell_blind'
+# filtering='drug_blind'
+# filtering='disjoint'
+scores = compute_scores_from_averaged_splits(
+    models=models,
+    sources=sources,
+    targets=targets,
+    outdir=averaged_splits_dir,
+    filtering=filtering
+)
+
+
+def compute_csa_tables_from_averaged_splits(
+    input_dir: Union[Path, str], 
+    outdir: Union[Path, str],
+    models: Optional[List]=None,
+    sources: Optional[List]=None,
+    targets: Optional[List]=None,
+    filtering: Optional[str]=None
+):
+    """
+    The split-averaging approach, computes scores for each split and then
+    averages the scores across splits.
+    """
+    # breakpoint()
+
+    os.makedirs(outdir, exist_ok=True)
+
+    assert filtering in ['drug_blind', 'cell_blind', 'disjoint', None], f"Invalid 'filtering' ({filtering})"
+
+    model_name = models[0]  # TODO
+    # scores = pd.read_csv(input_dir / f'{model_name}_scores.csv')
+    if filtering is not None:
+        scores = pd.read_csv(input_dir / f"{model_name}_scores_{filtering}.csv")
+    else:
+        scores = pd.read_csv(input_dir / f'{model_name}_scores.csv')
+
+    # Average across splits (Note! These are not further used)
+    sc_mean = scores.groupby(["met", "src", "trg"])["value"].mean().reset_index()
+    sc_std = scores.groupby(["met", "src", "trg"])["value"].std().reset_index()
+
+    # Generate csa table
+    mean_tb = {}
+    std_tb = {}
+    for met in scores.met.unique():
+        df = scores[scores.met == met]
+        # df = df.sort_values(["src", "trg", "met", "split"])
+        # df['model'] = model_name  # redundant
+        # df.to_csv(outdir / f"{met}_scores.csv", index=True)
+        # Mean
+        mean = df.groupby(["src", "trg"])["value"].mean()
+        mean = mean.unstack()
+        mean = apply_decimal_to_dataframe(mean, decimal_places=4)
+        print(f"{met} mean:\n{mean}")
+        mean_tb[met] = mean
+        # Std
+        std = df.groupby(["src", "trg"])["value"].std()
+        std = std.unstack()
+        print(f"{met} std:\n{std}")
+        std_tb[met] = std
+
+        if filtering is not None:
+            mean.to_csv(outdir / f"{model_name}_{met}_mean_csa_table_{filtering}.csv", index=True)
+            std.to_csv(outdir / f"{model_name}_{met}_std_csa_table_{filtering}.csv", index=True)
+        else:
+            mean.to_csv(outdir / f"{model_name}_{met}_mean_csa_table.csv", index=True)
+            std.to_csv(outdir / f"{model_name}_{met}_std_csa_table.csv", index=True)
+
+    # Quick test
+    # met="mse"; src="CCLE"; trg="GDSCv1" 
+    # print(f"src: {src}; trg: {trg}; met: {met}; mean: {scores[(scores.met==met) & (scores.src==src) & (scores.trg==trg)].value.mean()}")
+    # print(f"src: {src}; trg: {trg}; met: {met}; std:  {scores[(scores.met==met) & (scores.src==src) & (scores.trg==trg)].value.std()}")
+    # met="mse"; src="CCLE"; trg="GDSCv2" 
+    # print(f"src: {src}; trg: {trg}; met: {met}; mean: {scores[(scores.met==met) & (scores.src==src) & (scores.trg==trg)].value.mean()}")
+    # print(f"src: {src}; trg: {trg}; met: {met}; std:  {scores[(scores.met==met) & (scores.src==src) & (scores.trg==trg)].value.std()}")
+
+    # Generate densed csa table
+    df_on = scores[scores.src == scores.trg].reset_index()
+    on_mean = df_on.groupby(["met"])["value"].mean().reset_index().rename(
+        columns={"value": "mean"})
+    on_std = df_on.groupby(["met"])["value"].std().reset_index().rename(
+        columns={"value": "std"})
+    on = on_mean.merge(on_std, on="met", how="inner")
+    on["summary"] = "within"
+
+    df_off = scores[scores.src != scores.trg]
+    off_mean = df_off.groupby(["met"])["value"].mean().reset_index().rename(
+        columns={"value": "mean"})
+    off_std = df_off.groupby(["met"])["value"].std().reset_index().rename(
+        columns={"value": "std"})
+    off = off_mean.merge(off_std, on="met", how="inner")
+    off["summary"] = "cross"
+
+    print(f"On-diag mean:\n{on_mean}")
+    print(f"On-diag std: \n{on_std}")
+    print(f"Off-diag mean:\n{off_mean}")
+    print(f"Off-diag std: \n{off_std}")
+
+    # Combine dfs
+    df = pd.concat([on, off], axis=0).sort_values("met")
+    df['model'] = model_name
+    # df.to_csv(outdir / f"{model_name}_densed_csa_table.csv", index=False)
+    print(f"Densed CSA table:\n{df}")
+
+    if filtering is not None:
+        df.to_csv(outdir / f"{model_name}_densed_csa_table_{filtering}.csv", index=False)
+    else:
+        df.to_csv(outdir / f"{model_name}_densed_csa_table.csv", index=False)
+
+    return None
+
+
+# if not averaged_splits_dir.exists():
+#     models = ['graphdrp']
+#     sources = None
+#     targets = None
+#     compute_csa_tables_from_averaged_splits(
+#         models=models, sources=sources, targets=targets,
+#         input_dir=averaged_splits_dir, outdir=averaged_splits_dir)
+
+breakpoint()
+models = ['graphdrp']
+# models = None
+sources = None
+targets = None
+# filtering=None
+compute_csa_tables_from_averaged_splits(
+    models=models, sources=sources, targets=targets,
+    input_dir=averaged_splits_dir, outdir=averaged_splits_dir,
+    filtering=filtering
+)
+
+breakpoint()
+
+
+
+
+
+
+
 
 
 def build_weights_dfs(val_scores: pd.DataFrame,
                       outdir: Union[Path, str]='.'):
     """ Build weights DataFrames. """
-    breakpoint()
+    # breakpoint()
 
     os.makedirs(outdir, exist_ok=True)
 
@@ -171,128 +384,9 @@ def build_weights_dfs(val_scores: pd.DataFrame,
     return None
 
 
-# breakpoint()
+breakpoint()
 if not weights_dir.exists():
     build_weights_dfs(val_scores, outdir=weights_dir)
-
-
-# ---------------------------
-# Raw test model predictions
-# ---------------------------
-
-
-# def assign_weights_to_raw_preds_and_save_df(
-#     outdir: Union[Path, str]='test_preds_weighted',
-#     models: Optional[List]=None,
-#     sources: Optional[List]=None,
-#     targets: Optional[List]=None):
-#     """ Load raw predictions dfs on test data, and weights dataframes and
-#     assign weights to each test set prediction. Then save th prediction files.
-#     """
-
-#     outdir = Path(outdir)
-#     os.makedirs(outdir, exist_ok=True)
-
-#     # Glob pred files
-#     preds_dirname = 'test_preds'
-#     preds_dir = filepath / preds_dirname
-#     pred_files = sorted(preds_dir.glob('*'))
-
-#     # Extract unique sources and model names
-#     # File pattenr: <SOURCE>_split_<#>_<MODEL>.csv
-#     if models is None:
-#         models = sorted(set([f.stem.split('_')[-1] for f in pred_files]))
-#     if sources is None:
-#         sources = sorted(set([f.stem.split('_')[0] for f in pred_files]))
-#     if targets is None:
-#         targets = sorted(set([f.stem.split('_')[1] for f in pred_files]))
-
-#     # Cols to retain from raw pred files
-#     cols = ['model', 'src', 'trg', 'split',
-#             canc_col_name, drug_col_name, 'auc_true', 'auc_pred']
-
-#     # breakpoint()
-#     for model in models:  # model
-
-#         for source in sources:  # source
-#             # Load weights info
-#             wdf = pd.read_csv(outdir / f'val_scores_and_weights_{model}_{source}.csv')
-
-#             for target in targets:  # target
-#                 files = sorted(preds_dir.glob(f'{source}*{target}*{model}*'))
-
-#                 for fname in files:  # filename for all [source, model] combos
-#                     split = int(fname.stem.split('split_')[1].split('_')[0])
-#                     pdf = pd.read_csv(fname)  # preds dataframe
-#                     if not all(True if c in pdf.columns else False for c in cols):
-#                         print(fr"Don't include {fname} (not all columns present in the DataFrame)")
-#                         continue
-#                     print(f'Include {fname}')
-#                     assert pdf['model'].unique()[0] == model, 'model name in a \
-#                         file name is not consistent with the data'
-#                     pdf = pdf[cols]
-
-#                     # for met in metrics:  # met  # TODO. finish this!
-#                     # breakpoint()
-#                     met = 'r2'  # weighting metric
-#                     weight = wdf[(wdf['split'] == split)][f'{met}_weight'].values
-#                     pdf[f'auc_pred_w_{met}'] = weight * pdf['auc_pred']
-
-#                     out_fname = fname.stem + '_weighted.csv'
-#                     pdf.to_csv(outdir / out_fname, index=False)
-#     return None
-
-
-# breakpoint()
-# if not (filepath / 'test_preds_weighted').exists():
-#     assign_weights_to_raw_preds_and_save_df()
-
-
-# ---------------------------------------------
-# # breakpoint()
-# # Example data: predictions from 10 models for the entire trg dataset
-# predictions_trg = {
-#     "model_0": [0.3, 0.5, 0.7],  # Predictions on trg by model trained on split 0
-#     "model_1": [0.4, 0.6, 0.8],  # Predictions on trg by model trained on split 1
-#     "model_2": [0.2, 0.4, 0.6],  # Predictions on trg by model trained on split 2
-#     # Add predictions for all 10 models...
-# }
-# # Validation performance scores for each model (on src's val sets)
-# validation_scores = {
-#     "model_0": 0.85,
-#     "model_1": 0.90,
-#     "model_2": 0.88,
-#     # Add scores for all 10 models...
-# }
-
-# # Step 1: Normalize the weights
-# total_score = sum(validation_scores.values())
-# weights = {model: score / total_score for model, score in validation_scores.items()}
-# print("Normalized Weights:", weights)
-
-# # Step 2: Compute weighted predictions for each sample in trg
-# # Assuming all models predict on the same samples in trg
-# num_samples = len(next(iter(predictions_trg.values())))  # Number of samples in trg
-# ensemble_predictions = []
-
-# for sample_idx in range(num_samples):
-#     weighted_sum = 0
-#     for model, preds in predictions_trg.items():
-#         weighted_sum += weights[model] * preds[sample_idx]
-#     ensemble_predictions.append(weighted_sum)
-
-# # Step 3: Output ensemble predictions
-# print("Ensemble Predictions for trg:", ensemble_predictions)
-
-# # breakpoint()
-# agg_preds = {}
-# for model, weight in weights.items():
-#     pp = weight * np.array(predictions_trg[model])
-#     agg_preds[model] = pp
-# df = pd.DataFrame(agg_preds)
-# ens_preds = df.sum(axis=1)
-# print("Ensemble Predictions for trg:", ens_preds.values)
-# ---------------------------------------------
 
 
 def prediction_averaging(model: str, source: str, target: str,
@@ -344,24 +438,14 @@ def prediction_averaging(model: str, source: str, target: str,
     meta_df = pdf[meta_cols]
     # 
     raw_df = pd.concat([meta_df, raw_df], axis=1)
-    outpath = outdir / f'{source}_{target}_{model}_mean_preds.csv'
+    outpath = outdir / f'{model}_{source}_{target}_mean_preds.csv'
     raw_df.to_csv(outpath, index=False)
     # 
     weighted_df = pd.concat([meta_df, weighted_df], axis=1)
-    outpath = outdir / f'{source}_{target}_{model}_weighted_preds.csv'
+    outpath = outdir / f'{model}_{source}_{target}_weighted_preds.csv'
     weighted_df.to_csv(outpath, index=False)
 
     return raw_df, weighted_df
-
-
-# # breakpoint()
-# model = 'graphdrp'
-# source = 'GDSCv1'
-# target = 'CCLE'
-# wdf, rdf = prediction_averaging(model=model, source=source, target=target,
-#                                 outdir=averaged_preds_dir)
-# rs = compute_metrics(rdf['auc_true'], rdf['ens_pred'], metric_type='regression')
-# ws = compute_metrics(wdf['auc_true'], wdf['ens_pred'], metric_type='regression')
 
 
 def compute_scores_from_averaged_predictions(
@@ -394,138 +478,179 @@ def compute_scores_from_averaged_predictions(
     if targets is None:
         targets = sorted(set([f.stem.split('_')[1] for f in pred_files]))
 
-    print('Compute scores from averaged predictions.')
-    print('models:', models)
-    print('sources:', sources)
-    print('targets:', targets)
+    logging.info('\nCompute scores from averaged predictions.')
+    logging.info(f'models: {models}')
+    logging.info(f'sources: {sources}')
+    logging.info(f'targets: {targets}')
 
-    # breakpoint()
-    # rr = []  # list of dicts containing [model, source, target, split]
+    rd = []  # aux dict to aggeragte scores for each loop iteration
+    wd = []
 
     for model in models:  # model
         for src in sources:  # source
             for i, trg in enumerate(targets):  # target
                 if src== trg:
                     continue
+                logging.info(f'{model}; {src}; {trg}')
                 wdf, rdf = prediction_averaging(
                     model=model, source=src, target=trg, outdir=outdir)
 
                 # breakpoint()
-                rs = compute_metrics(
+                r_scores = compute_metrics(
                     rdf['auc_true'], rdf['ens_pred'], metric_type='regression')
-                jj[i] = rs
+                metrics = list(r_scores.keys())
+                r_scores['src'] = src
+                r_scores['trg'] = trg
+                r_scores['model'] = model
+                rd.append(r_scores)
 
-                ws = compute_metrics(
+                w_scores = compute_metrics(
                     wdf['auc_true'], wdf['ens_pred'], metric_type='regression')
+                w_scores['src'] = src
+                w_scores['trg'] = trg
+                w_scores['model'] = model
+                wd.append(w_scores)
 
-                # Convert dict to df, and aggregate dfs
-                breakpoint()
-                df = pd.DataFrame(jj)
-                df = df.stack().reset_index()
-                df.columns = ['met', 'split', 'value']
-                df['src'] = src
-                df['trg'] = trg
-                df['model'] = model
-                if df.empty is False:
-                    dfs.append(df)
+    del wdf, rdf, r_scores, w_scores
+    extra_cols = ['model', 'src', 'trg']
+
+    rdf = pd.DataFrame(rd)
+    rdf = rdf[extra_cols + metrics]
+    rdf.to_csv(outdir / f"mean_averaged_pred_scores.csv", index=False)
+    rdf_long = rdf.melt(id_vars=['model', 'src', 'trg'], var_name='met')
+    rdf_long.to_csv(outdir / f"mean_averaged_pred_scores_long_format.csv", index=False)
+
+    wdf = pd.DataFrame(wd)
+    wdf = wdf[extra_cols + metrics]
+    wdf.to_csv(outdir / f"weighted_averaged_pred_scores.csv", index=False)
+    wdf_long = wdf.melt(id_vars=['model', 'src', 'trg'], var_name='met')
+    wdf_long.to_csv(outdir / f"weighted_averaged_pred_scores_long_format.csv", index=False)
 
     return None
 
-# models = ['graphdrp']
-# sources = None
-# # sources = ['GDSCv1']
-# targets = None
-# compute_scores_from_averaged_predictions(
-#     models=models, sources=sources, targets=targets,
-#     outdir=averaged_preds_dir)
+
+if not averaged_preds_dir.exists():
+    models = ['graphdrp']
+    sources = None
+    # sources = ['CCLE', 'gCSI', 'GDSCv1', 'GDSCv2']
+    targets = None
+    # targets = ['CCLE', 'gCSI', 'GDSCv2']
+    compute_scores_from_averaged_predictions(
+        models=models, sources=sources, targets=targets,
+        outdir=averaged_preds_dir)
 
 
-def compute_scores_from_averaged_splits(
-    outdir: Union[Path, str],
-    models: Optional[List]=None,
-    sources: Optional[List]=None,
-    targets: Optional[List]=None):
+def compute_overlaps(src_data, trg_data, canc_col_name, drug_col_name):
+    """ Compute overlaps """
+    # Precompute response counts for each unique cell in both src and trg
+    src_cell_counts = src_data.groupby(canc_col_name)[y_col_name].count()
+    trg_cell_counts = trg_data.groupby(canc_col_name)[y_col_name].count()
+    src_drug_counts = src_data.groupby(drug_col_name)[y_col_name].count()
+    trg_drug_counts = trg_data.groupby(drug_col_name)[y_col_name].count()
+
+    # Find overlapping cells
+    unique_cell_overlap = set(src_cell_counts.index).intersection(trg_cell_counts.index)
+    unique_drug_overlap = set(src_drug_counts.index).intersection(trg_drug_counts.index)
+
+    # Compute weighted overlap using the precomputed counts
+    sample_cell_overlap = sum(
+        src_cell_counts[cell] + trg_cell_counts[cell] for cell in unique_cell_overlap
+    )
+    sample_drug_overlap = sum(
+        src_drug_counts[drug] + trg_drug_counts[drug] for drug in unique_drug_overlap
+    )
+
+    overlaps = {
+        "unq_drug_un": len(unique_drug_overlap),
+        "samp_drug_un": sample_drug_overlap,
+        "unq_cell_un": len(unique_cell_overlap),
+        "samp_cell_un": sample_cell_overlap
+    }
+    return overlaps
+
+
+def compute_overlap_proportion(src_data, trg_data, drug_col_name,
+                               canc_col_name, y_col_name):
+    """ Compute the proportion of trg samples involving overlapping drugs and
+    cells.
     """
-    The split-averaging approach, computes scores for each split and then
-    averages the scores across splits.
-    """
-    # breakpoint()
+    # Find unique drugs and cells in src and trg
+    src_drugs = set(src_data[drug_col_name])
+    trg_drugs = set(trg_data[drug_col_name])
+    src_cells = set(src_data[canc_col_name])
+    trg_cells = set(trg_data[canc_col_name])
 
-    os.makedirs(outdir, exist_ok=True)
+    # Find overlapping drugs and cells
+    overlapping_drugs = trg_drugs.intersection(src_drugs)
+    overlapping_cells = trg_cells.intersection(src_cells)
 
-    # Glob pred files
-    preds_dirname = 'test_preds'
-    preds_dir = filepath / preds_dirname
-    pred_files = sorted(preds_dir.glob('*'))
+    # Compute the number of trg samples involving overlapping drugs and cells
+    trg_drug_overlap_cnt = trg_data[trg_data[drug_col_name].isin(overlapping_drugs)].shape[0]
+    trg_cell_overlap_cnt = trg_data[trg_data[canc_col_name].isin(overlapping_cells)].shape[0]
 
-    # Extract unique sources and model names
-    # File pattenr: <SOURCE>_split_<#>_<MODEL>.csv
-    if models is None:
-        models = sorted(set([f.stem.split('_')[4] for f in pred_files]))
-    if sources is None:
-        sources = sorted(set([f.stem.split('_')[0] for f in pred_files]))
-    if targets is None:
-        targets = sorted(set([f.stem.split('_')[1] for f in pred_files]))
+    # Total number of trg samples
+    tot_trg_samples = trg_data.shape[0]
 
-    logging.info('\nCompute scores from averaged splits.')
-    logging.info(f'models: {models}')
-    logging.info(f'sources: {sources}')
-    logging.info(f'targets: {targets}')
+    # Compute proportions
+    drug_ratio = trg_drug_overlap_cnt / tot_trg_samples
+    cell_ratio = trg_cell_overlap_cnt / tot_trg_samples
 
-    dfs = []
-    jj = {}
+    return {
+        "trg_drug_overlap_ratio": drug_ratio,
+        "trg_cell_overlap_ratio": cell_ratio,
+        "trg_drug_overlap_cnt": trg_drug_overlap_cnt,
+        "trg_cell_overlap_cnt": trg_cell_overlap_cnt,
+    }
 
-    for model in models:  # model
-        model_dfs = []
-        for src in sources:  # source
-            for trg in targets:  # target
 
-                files = sorted(preds_dir.glob(f'{src}*{trg}*{model}*'))
+model_name = 'graphdrp'
+perf_data = pd.read_csv(averaged_splits_dir / f'{model_name}_scores.csv')
+print(f'Y data: {perf_data.shape}')
+pprint(perf_data.nunique())
 
-                for fname in files:  # filename for all [source, target, model] splits
-                    logging.info(f'Loading {fname}')
-                    split = int(fname.stem.split('split_')[1].split('_')[0])
-                    pdf = pd.read_csv(fname)  # preds dataframe
-
-                    y_true = pdf[f'{y_col_name}_true'].values
-                    y_pred = pdf[f'{y_col_name}_pred'].values
-                    sc = compute_metrics(y_true, y_pred, metric_type='regression')
-                    jj[split] = sc
-
-                # Convert dict to df, and aggregate dfs
-                df = pd.DataFrame(jj)
-                df = df.stack().reset_index()
-                df.columns = ['met', 'split', 'value']
-                df['src'] = src
-                df['trg'] = trg
-                df['model'] = model
-                if df.empty is False:
-                    model_dfs.append(df)
-
-        model_scores = pd.concat(model_dfs, axis=0).reset_index(drop=True)
-        model_scores.to_csv(outdir / f"{model}_scores.csv", index=False)
-
-        dfs.append(model_scores)
-        del model_dfs, pdf, jj, df
-
-    # Concat dfs and save
-    breakpoint()
-    scores = pd.concat(dfs, axis=0)
-    scores.to_csv(outdir / "all_model_scores.csv", index=False)
-    del dfs
-
-    return scores
-
+import time
+start = time.time()
+columns_to_load = [canc_col_name, drug_col_name, y_col_name]
+dfs = []
 
 breakpoint()
-models = ['graphdrp']
-sources = None
-# sources = ['GDSCv1']
-targets = None
-compute_scores_from_averaged_splits(
-    models=models, sources=sources, targets=targets,
-    outdir=averaged_splits_dir)
+for (src, trg, split), group_df in perf_data.groupby(["src", "trg", "split"]):
+    print(f'{src}-{trg}; split {split}')
+    group_df = group_df.reset_index(drop=True)
+    src_data = pd.read_csv(Path('y_data') / f'{model_name}_{src}_split_{split}_train.csv', usecols=columns_to_load)
 
+    if src == trg:
+        trg_data = pd.read_csv(Path('y_data') / f'{model_name}_{src}_split_{split}_test.csv', usecols=columns_to_load)
+    else:
+        trg_data = pd.read_csv(Path('y_data') / f'{model_name}_{trg}_all.csv')
 
+    # overlaps = compute_overlaps(src_data, trg_data, canc_col_name, drug_col_name)
+    overlaps = compute_overlap_proportion(src_data, trg_data, drug_col_name,
+                                          canc_col_name, y_col_name)
+    for k, v in overlaps.items():
+        group_df[k] = v
+
+    group_df['src_samples'] = len(src_data)
+    group_df['trg_samples'] = len(trg_data)
+    dfs.append(group_df)
+
+df = pd.concat(dfs, axis=0)
+
+df.to_csv(averaged_splits_dir / f'{model_name}_scores_with_cell_drug_overlaps.csv', index=False)
+end = time.time()
+print(f'Runtime: {(end - start) / 60} mins')
+
+res_df = pd.read_csv(averaged_splits_dir / f'{model_name}_scores_with_cell_drug_overlaps.csv')
+
+met = 'r2'
+df = res_df[(res_df['met'] == met) &
+            (res_df['model'] == model_name)].reset_index(drop=True)
+
+for col in ["trg_drug_overlap_ratio", "trg_cell_overlap_ratio"]:
+    if col in df.columns:
+        corr, _ = pearsonr(df[col], df['value'])
+        print(f"Correlation between {col} and metric_value: {corr}")
+
+breakpoint()
 
 print("Finished")
