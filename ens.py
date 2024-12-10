@@ -246,84 +246,94 @@ def compute_csa_tables_from_averaged_splits(
 
     assert filtering in ['drug_blind', 'cell_blind', 'disjoint', None], f"Invalid 'filtering' ({filtering})"
 
-    model_name = models[0]  # TODO
-    # scores = pd.read_csv(input_dir / f'{model_name}_scores.csv')
-    if filtering is not None:
-        scores = pd.read_csv(input_dir / f"{model_name}_scores_{filtering}.csv")
-    else:
-        scores = pd.read_csv(input_dir / f'{model_name}_scores.csv')
+    if models is None:
+        all_models_scores = pd.read_csv(input_dir / f'all_models_scores.csv')
+        models = sorted(all_models_scores['model'].unique().tolist())
 
-    # Average across splits (Note! These are not further used)
-    sc_mean = scores.groupby(["met", "src", "trg"])["value"].mean().reset_index()
-    sc_std = scores.groupby(["met", "src", "trg"])["value"].std().reset_index()
+    logging.info('\nCompute scores from averaged splits.')
+    logging.info(f'models: {models}')
+    logging.info(f'sources: {sources}')
+    logging.info(f'targets: {targets}')
 
-    # Generate csa table
-    mean_tb = {}
-    std_tb = {}
-    for met in scores.met.unique():
-        df = scores[scores.met == met]
-        # df = df.sort_values(["src", "trg", "met", "split"])
-        # df['model'] = model_name  # redundant
-        # df.to_csv(outdir / f"{met}_scores.csv", index=True)
-        # Mean
-        mean = df.groupby(["src", "trg"])["value"].mean()
-        mean = mean.unstack()
-        mean = apply_decimal_to_dataframe(mean, decimal_places=4)
-        print(f"{met} mean:\n{mean}")
-        mean_tb[met] = mean
-        # Std
-        std = df.groupby(["src", "trg"])["value"].std()
-        std = std.unstack()
-        print(f"{met} std:\n{std}")
-        std_tb[met] = std
+    for model_name in models:  # model
+
+        # scores = pd.read_csv(input_dir / f'{model_name}_scores.csv')
+        if filtering is not None:
+            scores = pd.read_csv(input_dir / f"{model_name}_scores_{filtering}.csv")
+        else:
+            scores = pd.read_csv(input_dir / f'{model_name}_scores.csv')
+
+        # Average across splits (Note! These are not further used)
+        sc_mean = scores.groupby(["met", "src", "trg"])["value"].mean().reset_index()
+        sc_std = scores.groupby(["met", "src", "trg"])["value"].std().reset_index()
+
+        # Generate csa table
+        mean_tb = {}
+        std_tb = {}
+        for met in scores.met.unique():
+            df = scores[scores.met == met]
+            # df = df.sort_values(["src", "trg", "met", "split"])
+            # df['model'] = model_name  # redundant
+            # df.to_csv(outdir / f"{met}_scores.csv", index=True)
+            # Mean
+            mean = df.groupby(["src", "trg"])["value"].mean()
+            mean = mean.unstack()
+            mean = apply_decimal_to_dataframe(mean, decimal_places=4)
+            print(f"{met} mean:\n{mean}")
+            mean_tb[met] = mean
+            # Std
+            std = df.groupby(["src", "trg"])["value"].std()
+            std = std.unstack()
+            print(f"{met} std:\n{std}")
+            std_tb[met] = std
+
+            if filtering is not None:
+                mean.to_csv(outdir / f"{model_name}_{met}_mean_csa_table_{filtering}.csv", index=True)
+                std.to_csv(outdir / f"{model_name}_{met}_std_csa_table_{filtering}.csv", index=True)
+            else:
+                mean.to_csv(outdir / f"{model_name}_{met}_mean_csa_table.csv", index=True)
+                std.to_csv(outdir / f"{model_name}_{met}_std_csa_table.csv", index=True)
+
+        # Quick test
+        # met="mse"; src="CCLE"; trg="GDSCv1" 
+        # print(f"src: {src}; trg: {trg}; met: {met}; mean: {scores[(scores.met==met) & (scores.src==src) & (scores.trg==trg)].value.mean()}")
+        # print(f"src: {src}; trg: {trg}; met: {met}; std:  {scores[(scores.met==met) & (scores.src==src) & (scores.trg==trg)].value.std()}")
+        # met="mse"; src="CCLE"; trg="GDSCv2" 
+        # print(f"src: {src}; trg: {trg}; met: {met}; mean: {scores[(scores.met==met) & (scores.src==src) & (scores.trg==trg)].value.mean()}")
+        # print(f"src: {src}; trg: {trg}; met: {met}; std:  {scores[(scores.met==met) & (scores.src==src) & (scores.trg==trg)].value.std()}")
+
+        # Generate densed csa table
+        df_on = scores[scores.src == scores.trg].reset_index()
+        on_mean = df_on.groupby(["met"])["value"].mean().reset_index().rename(
+            columns={"value": "mean"})
+        on_std = df_on.groupby(["met"])["value"].std().reset_index().rename(
+            columns={"value": "std"})
+        on = on_mean.merge(on_std, on="met", how="inner")
+        on["summary"] = "within"
+
+        df_off = scores[scores.src != scores.trg]
+        off_mean = df_off.groupby(["met"])["value"].mean().reset_index().rename(
+            columns={"value": "mean"})
+        off_std = df_off.groupby(["met"])["value"].std().reset_index().rename(
+            columns={"value": "std"})
+        off = off_mean.merge(off_std, on="met", how="inner")
+        off["summary"] = "cross"
+
+        print(f"On-diag mean:\n{on_mean}")
+        print(f"On-diag std: \n{on_std}")
+        print(f"Off-diag mean:\n{off_mean}")
+        print(f"Off-diag std: \n{off_std}")
+
+        # Combine dfs
+        df = pd.concat([on, off], axis=0).sort_values("met")
+        df['model'] = model_name
+        # df.to_csv(outdir / f"{model_name}_densed_csa_table.csv", index=False)
+        print(f"Densed CSA table:\n{df}")
 
         if filtering is not None:
-            mean.to_csv(outdir / f"{model_name}_{met}_mean_csa_table_{filtering}.csv", index=True)
-            std.to_csv(outdir / f"{model_name}_{met}_std_csa_table_{filtering}.csv", index=True)
+            df.to_csv(outdir / f"{model_name}_densed_csa_table_{filtering}.csv", index=False)
         else:
-            mean.to_csv(outdir / f"{model_name}_{met}_mean_csa_table.csv", index=True)
-            std.to_csv(outdir / f"{model_name}_{met}_std_csa_table.csv", index=True)
-
-    # Quick test
-    # met="mse"; src="CCLE"; trg="GDSCv1" 
-    # print(f"src: {src}; trg: {trg}; met: {met}; mean: {scores[(scores.met==met) & (scores.src==src) & (scores.trg==trg)].value.mean()}")
-    # print(f"src: {src}; trg: {trg}; met: {met}; std:  {scores[(scores.met==met) & (scores.src==src) & (scores.trg==trg)].value.std()}")
-    # met="mse"; src="CCLE"; trg="GDSCv2" 
-    # print(f"src: {src}; trg: {trg}; met: {met}; mean: {scores[(scores.met==met) & (scores.src==src) & (scores.trg==trg)].value.mean()}")
-    # print(f"src: {src}; trg: {trg}; met: {met}; std:  {scores[(scores.met==met) & (scores.src==src) & (scores.trg==trg)].value.std()}")
-
-    # Generate densed csa table
-    df_on = scores[scores.src == scores.trg].reset_index()
-    on_mean = df_on.groupby(["met"])["value"].mean().reset_index().rename(
-        columns={"value": "mean"})
-    on_std = df_on.groupby(["met"])["value"].std().reset_index().rename(
-        columns={"value": "std"})
-    on = on_mean.merge(on_std, on="met", how="inner")
-    on["summary"] = "within"
-
-    df_off = scores[scores.src != scores.trg]
-    off_mean = df_off.groupby(["met"])["value"].mean().reset_index().rename(
-        columns={"value": "mean"})
-    off_std = df_off.groupby(["met"])["value"].std().reset_index().rename(
-        columns={"value": "std"})
-    off = off_mean.merge(off_std, on="met", how="inner")
-    off["summary"] = "cross"
-
-    print(f"On-diag mean:\n{on_mean}")
-    print(f"On-diag std: \n{on_std}")
-    print(f"Off-diag mean:\n{off_mean}")
-    print(f"Off-diag std: \n{off_std}")
-
-    # Combine dfs
-    df = pd.concat([on, off], axis=0).sort_values("met")
-    df['model'] = model_name
-    # df.to_csv(outdir / f"{model_name}_densed_csa_table.csv", index=False)
-    print(f"Densed CSA table:\n{df}")
-
-    if filtering is not None:
-        df.to_csv(outdir / f"{model_name}_densed_csa_table_{filtering}.csv", index=False)
-    else:
-        df.to_csv(outdir / f"{model_name}_densed_csa_table.csv", index=False)
+            df.to_csv(outdir / f"{model_name}_densed_csa_table.csv", index=False)
 
     return None
 
@@ -337,8 +347,8 @@ def compute_csa_tables_from_averaged_splits(
 #         input_dir=averaged_splits_dir, outdir=averaged_splits_dir)
 
 breakpoint()
-models = ['graphdrp']
-# models = None
+# models = ['graphdrp']
+models = None
 sources = None
 targets = None
 # filtering=None
