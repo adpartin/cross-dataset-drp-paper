@@ -31,6 +31,7 @@ metrics_name_mapping = {
     "mae": "MAE",
     "rmse": "RMSE",
     "stgr": "STGR",
+    "stgi": "STGI",
 }
 
 
@@ -44,6 +45,14 @@ def boxplot_violinplot_within_study(
     ylabel: str = None, 
     xlabel: str = None, 
     xlabel_rotation: int = 45,
+    ymin: float = None,  # minimum y-axis limit
+    ymax: float = None,  # maximum y-axis limit
+    title_fontsize: int = 12,
+    xtick_fontsize: int = 11,
+    ytick_fontsize: int = 11,
+    xlabel_fontsize: int = 11,
+    ylabel_fontsize: int = 11,
+    datasets_order: list = [],
     show: bool = True
 ):
     """ 
@@ -62,6 +71,13 @@ def boxplot_violinplot_within_study(
         ylabel (str): the y-axis label of the plot
         xlabel (str): the x-axis label of the plot
         xlabel_rotation (int): the rotation of the x-axis labels
+        ymin (float): the minimum y-axis limit
+        ymax (float): the maximum y-axis limit
+        title_fontsize (int): the font size of the title
+        xtick_fontsize (int): the font size of the x-axis ticks
+        ytick_fontsize (int): the font size of the y-axis ticks
+        xlabel_fontsize (int): the font size of the x-axis label
+        ylabel_fontsize (int): the font size of the y-axis label
         show (bool): whether to show the plot
 
     It is expected the data include the following columns:
@@ -76,40 +92,52 @@ def boxplot_violinplot_within_study(
     # Plot settings
     title = f"{metrics_name_mapping[metric_name]} Prediction Performance (src=trg)" if title is None else title
     ylabel = f"{metrics_name_mapping[metric_name]} Score" if ylabel is None else ylabel
-    xlabel = "Source Dataset" if xlabel is None else xlabel
+    xlabel = "Dataset" if xlabel is None else xlabel
     xlabel_rotation = 45 if xlabel_rotation is None else xlabel_rotation
 
     # Plot: Boxplot for Each Source Dataset (src=trg)
     if len(models_to_include) == 1:
         plt.figure(figsize=(8, 5))
-        sns.boxplot(data=df, x="src", y="value", palette=palette, legend=False)
+        sns.boxplot(data=df, x="src", y="value", palette=palette, legend=False, order=datasets_order)
     else:
         plt.figure(figsize=(13, 6))
-        sns.boxplot(data=df, x="src", y="value", hue="model", palette=palette, legend=True)
+        sns.boxplot(data=df, x="src", y="value", hue="model", palette=palette, legend=True, order=datasets_order)
         plt.legend(title='Model')
-    plt.title(title)
-    plt.ylabel(ylabel)
-    plt.xlabel(xlabel)
-    plt.xticks(rotation=xlabel_rotation)
+    plt.title(title, fontsize=title_fontsize)
+    plt.ylabel(ylabel, fontsize=ylabel_fontsize)
+    plt.xlabel(xlabel, fontsize=xlabel_fontsize)
+    plt.yticks(fontsize=ytick_fontsize)
+    plt.xticks(rotation=xlabel_rotation, fontsize=xtick_fontsize)
+
+    # Set y-axis limits if provided
+    if ymin is not None or ymax is not None:
+        plt.ylim(ymin if ymin is not None else plt.ylim()[0], ymax if ymax is not None else plt.ylim()[1])
+
     plt.tight_layout()
-    plt.savefig(outdir / f"boxplot_{metric_name}_within_study_multiple_models.png")  # Save boxplot
+    plt.savefig(outdir / f"boxplot_{metric_name}_within_study_multiple_models.png")
     if show:
         plt.show()
 
     # Plot: Violin Plot for Each Source Dataset (src=trg)
     if len(models_to_include) == 1:
         plt.figure(figsize=(8, 5))
-        sns.violinplot(data=df, x="src", y="value", palette=palette, inner="quartile")
+        sns.violinplot(data=df, x="src", y="value", palette=palette, inner="quartile", order=datasets_order)
     else:
         plt.figure(figsize=(13, 6))
-        sns.violinplot(data=df, x="src", y="value", hue="model", palette=palette, inner="quartile", dodge=True)
-        plt.legend(title="Model", loc="upper center")#, bbox_to_anchor=(1, 0.5))
-    plt.title(title)
-    plt.ylabel(ylabel)
-    plt.xlabel(xlabel)
-    plt.xticks(rotation=xlabel_rotation)
+        sns.violinplot(data=df, x="src", y="value", hue="model", palette=palette, inner="quartile", dodge=True, order=datasets_order)
+        plt.legend(title="Model", loc="lower left")#, bbox_to_anchor=(1, 0.5))
+    plt.title(title, fontsize=title_fontsize)
+    plt.ylabel(ylabel, fontsize=ylabel_fontsize)
+    plt.xlabel(xlabel, fontsize=xlabel_fontsize)
+    plt.yticks(fontsize=ytick_fontsize)
+    plt.xticks(rotation=xlabel_rotation, fontsize=xtick_fontsize)
+
+    # Set y-axis limits if provided
+    if ymin is not None or ymax is not None:
+        plt.ylim(ymin if ymin is not None else plt.ylim()[0], ymax if ymax is not None else plt.ylim()[1])
+
     plt.tight_layout()
-    plt.savefig(outdir / f"violinplot_{metric_name}_within_study_multiple_models.png")  # Save violinplot
+    plt.savefig(outdir / f"violinplot_{metric_name}_within_study_multiple_models.png", dpi=300)
     if show:
         plt.show()
 
@@ -127,6 +155,14 @@ def boxplot_violinplot_cross_study(
     ylabel: str = None, 
     xlabel: str = None, 
     xlabel_rotation: int = 45,
+    ymin: float = None,
+    ymax: float = None,
+    title_fontsize: int = 12,
+    xtick_fontsize: int = 11,
+    ytick_fontsize: int = 11,
+    xlabel_fontsize: int = 11,
+    ylabel_fontsize: int = 11,
+    datasets_order: list = [],
     show: bool = True
 ):
     """
@@ -146,6 +182,14 @@ def boxplot_violinplot_cross_study(
         ylabel (str): the y-axis label of the plot
         xlabel (str): the x-axis label of the plot
         xlabel_rotation (int): the rotation of the x-axis labels
+        ymin (float): the minimum y-axis limit
+        ymax (float): the maximum y-axis limit
+        title_fontsize (int): the font size of the title
+        xtick_fontsize (int): the font size of the x-axis ticks
+        ytick_fontsize (int): the font size of the y-axis ticks
+        xlabel_fontsize (int): the font size of the x-axis label
+        ylabel_fontsize (int): the font size of the y-axis label
+        datasets_order (list): the order of the datasets in the plot
         show (bool): whether to show the plot
 
     It is expected the data include the following columns:
@@ -167,19 +211,26 @@ def boxplot_violinplot_cross_study(
     # sns.boxplot(data=filtered_data, x="trg", y="value", hue="model", palette=palette)
     if len(models_to_include) == 1:
         plt.figure(figsize=(8, 5))
-        sns.boxplot(data=df, x="trg", y="value", palette=palette, legend=False)
+        sns.boxplot(data=df, x="trg", y="value", palette=palette, legend=False, order=datasets_order)
     else:
         plt.figure(figsize=(13, 6))
-        sns.boxplot(data=df, x="trg", y="value", hue="model", palette=palette, legend=True)
+        sns.boxplot(data=df, x="trg", y="value", hue="model", palette=palette, legend=True, order=datasets_order)
         plt.legend(title='Model')
-    plt.title(title)
-    plt.ylabel(ylabel)
-    plt.xlabel(xlabel)
-    plt.xticks(rotation=xlabel_rotation)
+    plt.title(title, fontsize=title_fontsize)
+    plt.ylabel(ylabel, fontsize=ylabel_fontsize)
+    plt.xlabel(xlabel, fontsize=xlabel_fontsize)
+    plt.yticks(fontsize=ytick_fontsize)
+    plt.xticks(rotation=xlabel_rotation, fontsize=xtick_fontsize)
+    
+
+    # Set y-axis limits if provided
+    if ymin is not None or ymax is not None:
+        plt.ylim(ymin if ymin is not None else plt.ylim()[0], ymax if ymax is not None else plt.ylim()[1])
+
     plt.tight_layout()
 
     # Save the boxplot
-    plt.savefig(outdir / f"boxplot_{metric_name}_cross_study_from_{source_dataset}_to_targets.png")  # Save boxplot
+    plt.savefig(outdir / f"boxplot_{metric_name}_cross_study_from_{source_dataset}_to_targets.png", dpi=300)
     if show:
         plt.show()
     else:
@@ -188,19 +239,25 @@ def boxplot_violinplot_cross_study(
     # Plot: Violin Plot for Each Target Dataset (src != trg)
     if len(models_to_include) == 1:
         plt.figure(figsize=(8, 5))
-        sns.violinplot(data=df, x="trg", y="value", palette=palette, inner="quartile")
+        sns.violinplot(data=df, x="trg", y="value", palette=palette, inner="quartile", order=datasets_order)
     else:
         plt.figure(figsize=(13, 6))
-        sns.violinplot(data=df, x="trg", y="value", hue="model", palette=palette, inner="quartile", dodge=True)
-        plt.legend(title='Model', loc="upper center")
-    plt.title(title)
-    plt.ylabel(ylabel)
-    plt.xlabel(xlabel)
-    plt.xticks(rotation=xlabel_rotation)
+        sns.violinplot(data=df, x="trg", y="value", hue="model", palette=palette, inner="quartile", dodge=True, order=datasets_order)
+        plt.legend(title='Model', loc="upper right")
+    plt.title(title, fontsize=title_fontsize)
+    plt.ylabel(ylabel, fontsize=ylabel_fontsize)
+    plt.xlabel(xlabel, fontsize=xlabel_fontsize)
+    plt.yticks(fontsize=ytick_fontsize)
+    plt.xticks(rotation=xlabel_rotation, fontsize=xtick_fontsize)
+
+    # Set y-axis limits if provided
+    if ymin is not None or ymax is not None:
+        plt.ylim(ymin if ymin is not None else plt.ylim()[0], ymax if ymax is not None else plt.ylim()[1])
+
     plt.tight_layout()
 
     # Save the violin plot
-    plt.savefig(outdir / f"violinplot_{metric_name}_cross_study_from_{source_dataset}_to_targets.png")  # Save violinplot
+    plt.savefig(outdir / f"violinplot_{metric_name}_cross_study_from_{source_dataset}_to_targets.png", dpi=300)
     if show:
         plt.show()
     else:
@@ -219,7 +276,14 @@ def csa_heatmap(
     outdir: Path = Path("."),
     palette: str = "Blues",
     decimal_digits: int = 3,
-    show: bool = True
+    show: bool = True,
+    title_fontsize: int = 12,
+    xtick_fontsize: int = 11,
+    ytick_fontsize: int = 11,
+    xlabel_fontsize: int = 11,
+    ylabel_fontsize: int = 11,
+    cbar_fontsize: int = 10,
+    annot_size: int = 12,
 ):
     """
     Plot the CSA performance scores with standard deviations as a heatmap.
@@ -235,6 +299,13 @@ def csa_heatmap(
         palette (str): the palette to use for the plot
         decimal_digits (int): the number of decimal digits to show in annotations
         show (bool): whether to show the plot
+        title_fontsize (int): the font size of the title
+        xtick_fontsize (int): the font size of the x-axis ticks
+        ytick_fontsize (int): the font size of the y-axis ticks
+        xlabel_fontsize (int): the font size of the x-axis label
+        ylabel_fontsize (int): the font size of the y-axis label
+        cbar_fontsize (int): the font size of the colorbar label
+        annot_size (int): the font size of the annotations
 
     Returns:
         None
@@ -252,35 +323,42 @@ def csa_heatmap(
             scores_csa_data.round(decimal_digits).astype(str) + 
             "\n(" + std_csa_data.round(decimal_digits).astype(str) + ")"
         )
-        title = f"{model_name_mapping[model_name]}; {metrics_name_mapping[metric_name]} CSA Performance Scores with Standard Deviations"
+        # title = f"{model_name_mapping[model_name]}; {metrics_name_mapping[metric_name]} Scores with Standard Deviations"
+        title = f"{model_name_mapping[model_name]}"
         filename = f"{metric_name}_{model_name}_csa_heatmap_with_stds.png"
     else:
         combined_annotations = scores_csa_data.round(decimal_digits).astype(str)
-        title = f"{model_name_mapping[model_name]}; {metrics_name_mapping[metric_name]} CSA Performance Scores"
+        # title = f"{model_name_mapping[model_name]}; {metrics_name_mapping[metric_name]} Scores"
+        title = f"{model_name_mapping[model_name]}"
         filename = f"{metric_name}_{model_name}_csa_heatmap.png"
 
     # Plot the heatmap
     plt.figure(figsize=(7, 5))
     sns.heatmap(
-        scores_csa_data, 
+        scores_csa_data,
         annot=combined_annotations.values,
-        fmt="", 
-        cmap=cmap, 
-        norm=norm, 
-        cbar_kws={'label': f'{metrics_name_mapping[metric_name]} Score'}
+        fmt="",
+        cmap=cmap,
+        norm=norm,
+        cbar_kws={},
+        annot_kws={'size': annot_size},
     )
 
     # Customize colorbar ticks
     colorbar = plt.gca().collections[0].colorbar
     colorbar.set_ticks([threshold, 0, 0.5, vmax])
     colorbar.set_ticklabels([f"≤ {threshold}", "0", "0.5", f"≤ {vmax}"])
+    colorbar.ax.tick_params(labelsize=cbar_fontsize)  # Set font size for colorbar ticks
+    colorbar.set_label(f'{metrics_name_mapping[metric_name]} Score', fontsize=cbar_fontsize)  # Set font size for label
 
     # Finalize plot
-    plt.title(title)
-    plt.xlabel("Target Dataset")
-    plt.ylabel("Source Dataset")
+    plt.title(title, fontsize=title_fontsize)
+    plt.xticks(fontsize=xtick_fontsize)
+    plt.yticks(fontsize=ytick_fontsize, rotation=0)
+    plt.xlabel("Target Dataset", fontsize=xlabel_fontsize)
+    plt.ylabel("Source Dataset", fontsize=ylabel_fontsize)
     plt.tight_layout()
-    plt.savefig(outdir / filename)
+    plt.savefig(outdir / filename, dpi=300)
     if show:
         plt.show()
     else:
@@ -393,9 +471,8 @@ Key Characteristics:
         comparative analysis.
     - Interpretation: Higher STGI indicates better generalization from the source 
         dataset to other datasets.
-        - STGI > 0: Indicates average positive generalization across other datasets.
-        - STGI < 0: Suggests poor generalization performance to other datasets.
-        - STGI ≈ 0: Indicates no net generalization (e.g., neutral average scores).
+        - STGI > 0: positive average generalization from the source across other datasets.
+        - STGI < 0: poor average generalization performance from the source across other datasets.
     - Caveats
         - Aggregation can mask pairwise nuances: Individual source-target relationships may get obscured.
         - Sensitive to dataset-specific biases: Strong performance on a subset of target datasets can dominate the average.
@@ -465,3 +542,99 @@ def compute_stgi_bruteforce(scores):
         stgi[src] = sum(cross_study) / len(cross_study) if len(cross_study) > 0 else 0  # Avoid division by zero
 
     return stgi
+
+
+
+def stgi_heatmap(
+    metric_name: str,
+    scores_stgi_data: pd.DataFrame,
+    vmin: float = -0.5,
+    vmax: float = 1,
+    outdir: Path = Path("."),
+    palette: str = "plasma",
+    decimal_digits: int = 3,
+    title_fontsize: int = 12,
+    xtick_fontsize: int = 11,
+    ytick_fontsize: int = 11,
+    xlabel_fontsize: int = 11,
+    ylabel_fontsize: int = 11,
+    cbar_fontsize: int = 10,
+    annot_size: int = 12,
+    show: bool = True
+):
+    """
+    Plot the CSA performance scores with standard deviations as a heatmap.
+
+    Args:
+        metric_name (str): the name of the metric
+        scores_stgi_data (pd.DataFrame): the STGI performance scores (mean across splits)
+        vmin (float): the minimum value of the colorbar
+        vmax (float): the maximum value of the colorbar
+        outdir (Path): the directory to save the plot
+        palette (str): the palette to use for the plot
+        decimal_digits (int): the number of decimal digits to show in annotations
+        title_fontsize (int): the font size of the title
+        xtick_fontsize (int): the font size of the x-axis ticks
+        ytick_fontsize (int): the font size of the y-axis ticks
+        xlabel_fontsize (int): the font size of the x-axis label
+        ylabel_fontsize (int): the font size of the y-axis label
+        cbar_fontsize (int): the font size of the colorbar label
+        annot_size (int): the font size of the annotations
+        show (bool): whether to show the plot
+
+    Returns:
+        None
+    """
+    # Define colormap
+    # cmap = sns.color_palette(palette, as_cmap=True)
+    if palette in plt.colormaps():  # Check if the palette is a valid Matplotlib colormap
+        cmap = plt.get_cmap(palette)
+    else:
+        cmap = sns.color_palette(palette, as_cmap=True)  # Use Seaborn for custom palettes
+
+    # Use Normalize to ensure linear scaling
+    threshold = vmin  # Values <= -0.5 will be deep blue
+    norm = Normalize(vmin=threshold, vmax=vmax)
+
+    # Name map for models
+    scores_stgi_data.index = [model_name_mapping[model] for model in scores_stgi_data.index]
+
+    # Combine scores and stds for annotations with specified decimal digits
+    combined_annotations = scores_stgi_data.round(decimal_digits).astype(str)
+    title = f"Source-to-Target Generalization Index (STGI)"
+    filename = f"{metric_name}_stgi_heatmap.png"
+
+    # Plot the heatmap
+    plt.figure(figsize=(7, 5))
+    sns.heatmap(
+        scores_stgi_data, 
+        annot=combined_annotations.values,
+        fmt="", 
+        cmap=cmap, 
+        norm=norm, 
+        # cbar_kws={'label': f'{metrics_name_mapping[metric_name]} Score'},
+        cbar_kws={},
+        annot_kws={'size': annot_size},
+    )
+
+    # Customize colorbar ticks
+    colorbar = plt.gca().collections[0].colorbar
+    colorbar.set_ticks([threshold, 0, 0.5, vmax])
+    colorbar.set_ticklabels([f"≤ {threshold}", "0", "0.5", f"≤ {vmax}"])
+    colorbar.ax.tick_params(labelsize=cbar_fontsize)  # Set font size for colorbar ticks
+    colorbar.set_label(f'{metrics_name_mapping[metric_name]} Score', fontsize=cbar_fontsize)  # Set font size for label
+
+    # Finalize plot
+    plt.title(title, fontsize=title_fontsize)
+    plt.xticks(fontsize=xtick_fontsize)
+    plt.yticks(fontsize=ytick_fontsize)
+    plt.xlabel("Source Dataset", fontsize=xlabel_fontsize)
+    plt.ylabel("Model", fontsize=ylabel_fontsize)
+    plt.tight_layout()
+    plt.savefig(outdir / filename, dpi=300)
+    if show:
+        plt.show()
+    else:
+        plt.close()
+
+    return None

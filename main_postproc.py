@@ -48,7 +48,8 @@ models_paths_list  = sorted(main_models_path.glob('*'))  # list of paths to the 
 
 # Filter models
 models_paths_list = [p for p in models_paths_list if (p/'improve_output').exists()]
-exclude_models = ['pathdsp']
+# exclude_models = ['pathdsp']
+exclude_models = []
 models_paths_list = [
     path for path in models_paths_list
     if not any(exclude_name in path.name for exclude_name in exclude_models)
@@ -93,7 +94,8 @@ def collect_and_save_raw_preds(models_paths_list: List,
     out_preds_dir = outdir / f'{subset_type}_preds'
     os.makedirs(out_preds_dir, exist_ok=True)
 
-    cols = [canc_col_name, drug_col_name, y_col_name, f'{y_col_name}_true', f'{y_col_name}_pred']
+    cols = [canc_col_name, drug_col_name, y_col_name,
+            f'{y_col_name}_true', f'{y_col_name}_pred']
     extra_cols = ['model', 'src', 'trg', 'set', 'split']
 
     logging.info('\nSave raw model predictions into new files.')
