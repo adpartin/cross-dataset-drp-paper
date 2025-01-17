@@ -485,21 +485,26 @@ Formula:
         - n: Number of datasets (size of the scores matrix)
 """
 
-def compute_stgi_vectorized(scores):
+def compute_stgi_vectorized(scores: pd.DataFrame, normalize: bool = True) -> pd.Series:
     """
     Compute the Source-to-Target Generalization Index (STGI) using a vectorized approach.
     This version uses diagonal_values[:, None] for row-wise broadcasting.
+    If normalize is False, the regular mean is computed excluding the source-source score.
 
     Args:
         scores (pd.DataFrame): A square DataFrame where rows represent source datasets 
             and columns represent target datasets. Each cell contains the performance 
             score for the source-target pair.
+        normalize (bool): Whether to normalize the scores (for STGI) or compute mean.
 
     Returns:
         pd.Series: A Series of STGI values, one for each source dataset.
     """
     diagonal_values = scores.to_numpy().diagonal()  # Extract within-study performances
-    normalized_scores = scores.to_numpy() / diagonal_values[:, None]  # Row-wise division
+    if normalize:
+        normalized_scores = scores.to_numpy() / diagonal_values[:, None]  # Row-wise division
+    else:
+        normalized_scores = scores.to_numpy()
 
     # Set diagonal to NaN to exclude from averaging
     np.fill_diagonal(normalized_scores, np.nan)
@@ -511,7 +516,7 @@ def compute_stgi_vectorized(scores):
     return stgi
 
 
-def compute_stgi_bruteforce(scores):
+def compute_stgi_bruteforce(scores: pd.DataFrame) -> pd.Series:
     """
     Compute the Source-to-Target Generalization Index (STGI) for each source dataset.
 
@@ -602,7 +607,7 @@ def stgi_heatmap(
     # Combine scores and stds for annotations with specified decimal digits
     combined_annotations = scores_stgi_data.round(decimal_digits).astype(str)
     title = f"Source-to-Target Generalization Index (STGI)"
-    filename = f"{metric_name}_stgi_heatmap.png"
+    filename = f"{metric_name}_heatmap.png"
 
     # Plot the heatmap
     plt.figure(figsize=(7, 5))
