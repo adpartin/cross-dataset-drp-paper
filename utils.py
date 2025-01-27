@@ -349,7 +349,8 @@ def csa_heatmap(
     colorbar.set_ticks([threshold, 0, 0.5, vmax])
     colorbar.set_ticklabels([f"≤ {threshold}", "0", "0.5", f"≤ {vmax}"])
     colorbar.ax.tick_params(labelsize=cbar_fontsize)  # Set font size for colorbar ticks
-    colorbar.set_label(f'{metrics_name_mapping[metric_name]} Score', fontsize=cbar_fontsize)  # Set font size for label
+    # colorbar.set_label(f'{metrics_name_mapping[metric_name]} Score', fontsize=cbar_fontsize)  # Set font size for label
+    colorbar.set_label(f'{metric_name} score', fontsize=cbar_fontsize)  # Set font size for label
 
     # Finalize plot
     plt.title(title, fontsize=title_fontsize)
