@@ -269,6 +269,7 @@ def boxplot_violinplot_cross_study(
 def csa_heatmap(
     model_name: str,
     metric_name: str,
+    csa_metric_name: str,
     scores_csa_data: pd.DataFrame,
     std_csa_data: Optional[pd.DataFrame] = None,
     vmin: float = -0.5,
@@ -287,10 +288,12 @@ def csa_heatmap(
 ):
     """
     Plot the CSA performance scores with standard deviations as a heatmap.
+    This function is used to plot the G and Gn matrices.
 
     Args:
         model_name (str): the name of the model
         metric_name (str): the name of the metric
+        csa_metric_name (str): the csa metric name (G, Ga, Gn, Gna)
         scores_csa_data (pd.DataFrame): the CSA performance scores (mean across splits)
         std_csa_data (pd.DataFrame): the CSA standard deviations (std across splits)
         vmin (float): the minimum value of the colorbar
@@ -323,14 +326,11 @@ def csa_heatmap(
             scores_csa_data.round(decimal_digits).astype(str) + 
             "\n(" + std_csa_data.round(decimal_digits).astype(str) + ")"
         )
-        # title = f"{model_name_mapping[model_name]}; {metrics_name_mapping[metric_name]} Scores with Standard Deviations"
-        title = f"{model_name_mapping[model_name]}"
         filename = f"{metric_name}_{model_name}_csa_heatmap_with_stds.png"
     else:
         combined_annotations = scores_csa_data.round(decimal_digits).astype(str)
-        # title = f"{model_name_mapping[model_name]}; {metrics_name_mapping[metric_name]} Scores"
-        title = f"{model_name_mapping[model_name]}"
         filename = f"{metric_name}_{model_name}_csa_heatmap.png"
+    title = f"${csa_metric_name}$ matrix for {model_name_mapping[model_name]}"
 
     # Plot the heatmap
     plt.figure(figsize=(7, 5))
