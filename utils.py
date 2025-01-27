@@ -287,8 +287,9 @@ def csa_heatmap(
     annot_size: int = 12,
 ):
     """
-    Plot the CSA performance scores with standard deviations as a heatmap.
-    This function is used to plot the G and Gn matrices.
+    This function plots the G and Gn matrices as heatmaps.
+    For G, we plot mean and std in parentheses.
+    For Gn, we plot the mean of normalized scores.
 
     Args:
         model_name (str): the name of the model
@@ -373,41 +374,43 @@ def csa_heatmap(
 # Custom Metrics
 # ----------------------------------------------------------------------------
 
-# Source-Target Generalization Ratio (STG-R)
+# Normalized Generalization Matrix (Gn)
 """
-The STGR quantifies the relative performance of a model trained on a source dataset and
+Gn is the normalized version of the basic Generalization matrix (G) in the CSA framework.
+
+The Gn quantifies the relative performance of a model trained on a source dataset and
 applied to a target dataset. It provides a pairwise comparison by normalizing each 
 source-target performance score by the source-source performance.
 
-STGR evaluates generalization quality per source-target pair, informing on dataset 
+Gn evaluates generalization quality per source-target pair, informing on dataset 
 alignments and model transferability.
 
 Key Characteristics:
-    - Pairwise Analysis/Metric: Each score S[i, j] is divided by the within-study performance S[i, i],
+    - Pairwise Analysis/Metric: Each score G[i, j] is divided by the within-study performance G[i, i],
         providing insights into source-target performance for each dataset pair.
     - No Aggregation: Retains all normalized values, making it suitable for detailed analysis of
         cross-study generalization.
-    - Generalization Insight: STGR highlights the balance between cross-study and 
+    - Generalization Insight: Gn highlights the balance between cross-study and 
         within-study performance for each pair.
     - Interpretation: 
-        - STGR ≈ 1: Generalization to the target is similar to within-study performance.
-        - STGR < 1: Generalization to the target is worse than within-study performance.
-        - STGR > 1: Performance on the target exceeds within-study performance, possibly 
+        - Gn ≈ 1: Generalization to the target is similar to within-study performance.
+        - Gn < 1: Generalization to the target is worse than within-study performance.
+        - Gn > 1: Performance on the target exceeds within-study performance, possibly 
             due to target simplicity or alignment.
     - Edge Cases
         - Zero within-study performance: If scores[src, src] == 0, the result is undefined; 
             a default value of 0 is assigned.
 
 Formula:
-    STGR[i, j] = Performance(src → trg) / Performance(src → src)
+    Gn[i, j] = Performance(src → trg) / Performance(src → src)
     Where:
         - Performance(src → trg): Cross-study performance for source i on target j.
         - Performance(src → src): Within-study performance for source i.
 """
 
-def compute_stgr_vectorized(scores):
+def compute_Gn_vectorized(scores: pd.DataFrame) -> pd.DataFrame:
     """
-    Compute the Source-Target Generalization Ratio (STGR) using a vectorized approach.
+    Compute the normalized version of G (Gn) using a vectorized approach.
     This version uses diagonal_values[:, None] for row-wise broadcasting.
 
     Args:
@@ -416,17 +419,17 @@ def compute_stgr_vectorized(scores):
             score for the source-target pair.
 
     Returns:
-        pd.DataFrame: A DataFrame of STGR values.
+        pd.DataFrame: A DataFrame of Gn values.
     """
     diagonal_values = scores.to_numpy().diagonal()  # Extract within-study performances
     normalized_scores = scores.to_numpy() / diagonal_values[:, None]  # Row-wise division
-    stgr = pd.DataFrame(normalized_scores, index=scores.index, columns=scores.columns)
-    return stgr
+    Gn = pd.DataFrame(normalized_scores, index=scores.index, columns=scores.columns)
+    return Gn
 
 
-def compute_stgr_bruteforce(scores):
+def compute_Gn_bruteforce(scores: pd.DataFrame) -> dict:
     """
-    Compute the Source-Target Generalization Ratio (STGR) using a brute-force approach.
+    Compute the Normalized Generalization Matrix (Gn) using a brute-force approach.
 
     Args:
         scores (pd.DataFrame): A square DataFrame where rows represent source datasets 
@@ -435,72 +438,101 @@ def compute_stgr_bruteforce(scores):
 
     Returns:
         dict: A nested dictionary where keys are source dataset names, and values are 
-              dictionaries with target dataset names as keys and STGR values as values.
+              dictionaries with target dataset names as keys and Gn values as values.
     """
-    stgr = {}  # Initialize an empty dictionary
+    Gn = {}  # Initialize an empty dictionary
     diagonal_values = scores.to_numpy().diagonal()  # Extract within-study performances (diagonal values)
     
     for i, src in enumerate(scores.index):  # Iterate over source datasets
-        stgr[src] = {}  # Create a nested dictionary for the source dataset
+        Gn[src] = {}  # Create a nested dictionary for the source dataset
         within_study = diagonal_values[i]  # Retrieve the within-study performance for the source
 
         for j, trg in enumerate(scores.columns):  # Iterate over target datasets
             if within_study != 0:  # Avoid division by zero
-                stgr[src][trg] = scores.iloc[i, j] / within_study  # Normalize the score for src → trg
+                Gn[src][trg] = scores.iloc[i, j] / within_study  # Normalize the score for src → trg
             else:
-                stgr[src][trg] = 0  # Assign STGR to 0 if within-study performance is zero
+                Gn[src][trg] = 0  # Assign Gn to 0 if within-study performance is zero
 
-    return stgr
+    return Gn
 
 
-# Source-to-Target Generalization Index (STG-I)
+# Aggregated Generalization Matrix (Ga and Gna)
 """
-The STGI evaluates the average cross-study generalization of a source dataset by 
-aggregating pairwise normalized performance scores across all target datasets 
-(excluding the diagonal).
+The Ga and Gna evaluate the average cross-study generalization of a source dataset by 
+aggregating pairwise performance scores across all target datasets (excluding the diagonal).
 
-STGI summarizes how well a single source dataset generalizes across many targets, 
-helping to understand the intrinsic value of a dataset for training.
+Ga summarizes the raw performance scores, while Gna normalizes each source-target performance 
+score by the within-study performance.
 
 Key Characteristics:
-    - Normalization: Each score S[i, j] is divided by the within-study performance 
-        S[i, i] for the source dataset i.
-    - Exclusion of Diagonal: Within-study values (S[i, i]) are excluded from the summation.
-    - Generalization: STGI highlights how well a source dataset generalizes to 
-        other target datasets on average {as compared to within-study performance}.
+    - Normalization (for Gna): Each score G[i, j] is divided by the within-study performance 
+        G[i, i] for the source dataset i.
+    - Exclusion of Diagonal: Within-study values (G[i, i]) are excluded from the summation.
+    - Generalization: Ga and Gna highlight how well a source dataset generalizes to 
+        other target datasets on average.
     - Aggregation: Outputs a single value for each source dataset, making it ideal for
         comparative analysis.
-    - Interpretation: Higher STGI indicates better generalization from the source 
+    - Interpretation: Higher Ga or Gna indicates better generalization from the source 
         dataset to other datasets.
-        - STGI > 0: positive average generalization from the source across other datasets.
-        - STGI < 0: poor average generalization performance from the source across other datasets.
+        - Ga or Gna > 0: positive average generalization from the source across other datasets.
+        - Ga or Gna < 0: poor average generalization performance from the source across other datasets.
     - Caveats
         - Aggregation can mask pairwise nuances: Individual source-target relationships may get obscured.
         - Sensitive to dataset-specific biases: Strong performance on a subset of target datasets can dominate the average.
 
 Formula:
-    STGI[i] = (1 / (n - 1)) * Σ[j != i] (S[i, j] / S[i, i])
+    Ga[i] = (1 / (n - 1)) * Σ[j != i] G[i, j]
+    Gna[i] = (1 / (n - 1)) * Σ[j != i] (G[i, j] / G[i, i])
     Where:
-        - S[i, j]: Performance of source i on target j
-        - S[i, i]: Within-study performance for source i
+        - G[i, j]: Performance of source i on target j
+        - G[i, i]: Within-study performance for source i (for Gna)
         - n: Number of datasets (size of the scores matrix)
 """
 
-def compute_stgi_vectorized(scores: pd.DataFrame, normalize: bool = True) -> pd.Series:
+# def compute_Gna_vectorized(scores: pd.DataFrame, normalize: bool = True) -> pd.Series:
+#     """
+#     Compute the Aggregated Normalized Generalization Matrix (Gna) using a vectorized approach.
+#     This version uses diagonal_values[:, None] for row-wise broadcasting.
+#     If normalize is False, the regular mean is computed excluding the source-source score.
+
+#     Args:
+#         scores (pd.DataFrame): A square DataFrame where rows represent source datasets 
+#             and columns represent target datasets. Each cell contains the performance 
+#             score for the source-target pair.
+#         normalize (bool): Whether to normalize the scores (for Gna) or compute mean.
+
+#     Returns:
+#         pd.Series: A Series of Gna values, one for each source dataset.
+#     """
+#     diagonal_values = scores.to_numpy().diagonal()  # Extract within-study performances
+#     if normalize:
+#         normalized_scores = scores.to_numpy() / diagonal_values[:, None]  # Row-wise division
+#     else:
+#         normalized_scores = scores.to_numpy()
+
+#     # Set diagonal to NaN to exclude from averaging
+#     np.fill_diagonal(normalized_scores, np.nan)
+
+#     # Compute mean across columns (ignoring NaN) and return as Series
+#     Gna = np.nanmean(normalized_scores, axis=1)
+#     Gna = {dataset: value for dataset, value in zip(scores.index, Gna)}
+#     return Gna
+
+def compute_aggregated_G_vectorized(scores: pd.DataFrame, normalize: bool = True) -> pd.Series:
     """
-    Compute the Source-to-Target Generalization Index (STGI) using a vectorized approach.
+    Compute the Aggregated Generalization Matrix (Ga or Gna) using a vectorized approach.
     This version uses diagonal_values[:, None] for row-wise broadcasting.
-    If normalize is False, the regular mean is computed excluding the source-source score.
 
     Args:
         scores (pd.DataFrame): A square DataFrame where rows represent source datasets 
             and columns represent target datasets. Each cell contains the performance 
             score for the source-target pair.
-        normalize (bool): Whether to normalize the scores (for STGI) or compute mean.
+        normalize (bool): Whether to normalize the scores (for Gna) or compute mean (for Ga).
 
     Returns:
-        pd.Series: A Series of STGI values, one for each source dataset.
+        pd.Series: A Series of Ga or Gna values, one for each source dataset.
     """
+    scores = scores.copy()
     diagonal_values = scores.to_numpy().diagonal()  # Extract within-study performances
     if normalize:
         normalized_scores = scores.to_numpy() / diagonal_values[:, None]  # Row-wise division
@@ -511,49 +543,82 @@ def compute_stgi_vectorized(scores: pd.DataFrame, normalize: bool = True) -> pd.
     np.fill_diagonal(normalized_scores, np.nan)
 
     # Compute mean across columns (ignoring NaN) and return as Series
-    stgi = np.nanmean(normalized_scores, axis=1)
-    # stgi = pd.Series(stgi, index=scores.index)
-    stgi = {dataset: value for dataset, value in zip(scores.index, stgi)}
-    return stgi
+    aggregated_scores = np.nanmean(normalized_scores, axis=1)
+    aggregated_scores = {dataset: value for dataset, value in zip(scores.index, aggregated_scores)}
+    return aggregated_scores
 
+# def compute_Gna_bruteforce(scores: pd.DataFrame) -> pd.Series:
+#     """
+#     Compute the aggregated normalized version of G (Gna) using a brute-force approach
+#     (previoulsy called Source-to-Target Generalization Index (STGI)).
 
-def compute_stgi_bruteforce(scores: pd.DataFrame) -> pd.Series:
+#     Args:
+#         scores (pd.DataFrame): A square DataFrame where rows represent source datasets 
+#             and columns represent target datasets. Each cell contains the performance 
+#             score for the source-target pair.
+
+#     Returns:
+#         dict: A dictionary where keys are source dataset names, and values are the 
+#               computed STGI for each source.
+#     """
+#     Gna = {}  # Initialize an empty dictionary
+#     diagonal_values = scores.to_numpy().diagonal()  # Extract within-study performances (diagonal values)
+    
+#     for i, src in enumerate(scores.index):  # Iterate over source datasets
+#         cross_study = []  # List to collect normalized cross-study scores
+#         within_study = diagonal_values[i]  # Retrieve the within-study performance for the source
+
+#         for j, trg in enumerate(scores.columns):  # Iterate over target datasets
+#             if i != j:  # Exclude within-study values
+#                 if within_study != 0:  # Avoid division by zero
+#                     cross_study.append(scores.iloc[i, j] / within_study)  # Normalize the score
+#                 else:
+#                     cross_study.append(0)  # Assign 0 if within-study performance is zero
+
+#         # Compute the mean of cross-study scores for the current source dataset (src)
+#         Gna[src] = sum(cross_study) / len(cross_study) if len(cross_study) > 0 else 0  # Avoid division by zero
+
+#     return Gna
+
+def compute_aggregated_G_bruteforce(scores: pd.DataFrame, normalize: bool = True) -> dict:
     """
-    Compute the Source-to-Target Generalization Index (STGI) for each source dataset.
+    Compute the Aggregated Generalization Matrix (Ga or Gna) using a brute-force approach.
 
     Args:
         scores (pd.DataFrame): A square DataFrame where rows represent source datasets 
             and columns represent target datasets. Each cell contains the performance 
             score for the source-target pair.
+        normalize (bool): Whether to normalize the scores (for Gna) or compute mean (for Ga).
 
     Returns:
         dict: A dictionary where keys are source dataset names, and values are the 
-              computed STGI for each source.
+              computed Ga or Gna for each source.
     """
-    stgi = {}  # Initialize an empty dictionary
+    scores = scores.copy()
+    aggregated_scores = {}  # Initialize an empty dictionary
     diagonal_values = scores.to_numpy().diagonal()  # Extract within-study performances (diagonal values)
     
     for i, src in enumerate(scores.index):  # Iterate over source datasets
-        cross_study = []  # List to collect normalized cross-study scores
+        cross_study = []  # List to collect cross-study scores
         within_study = diagonal_values[i]  # Retrieve the within-study performance for the source
 
         for j, trg in enumerate(scores.columns):  # Iterate over target datasets
             if i != j:  # Exclude within-study values
-                if within_study != 0:  # Avoid division by zero
+                if normalize and within_study != 0:  # Normalize if required and avoid division by zero
                     cross_study.append(scores.iloc[i, j] / within_study)  # Normalize the score
                 else:
-                    cross_study.append(0)  # Assign 0 if within-study performance is zero
+                    cross_study.append(scores.iloc[i, j])  # Use raw score
 
         # Compute the mean of cross-study scores for the current source dataset (src)
-        stgi[src] = sum(cross_study) / len(cross_study) if len(cross_study) > 0 else 0  # Avoid division by zero
+        aggregated_scores[src] = sum(cross_study) / len(cross_study) if len(cross_study) > 0 else 0  # Avoid division by zero
 
-    return stgi
+    return aggregated_scores
 
 
-
-def stgi_heatmap(
+def aggregated_G_heatmap(
     metric_name: str,
-    scores_stgi_data: pd.DataFrame,
+    csa_metric_name: str,
+    scores_aggregated_data: pd.DataFrame,
     vmin: float = -0.5,
     vmax: float = 1,
     outdir: Path = Path("."),
@@ -573,7 +638,8 @@ def stgi_heatmap(
 
     Args:
         metric_name (str): the name of the metric
-        scores_stgi_data (pd.DataFrame): the STGI performance scores (mean across splits)
+        csa_metric_name (str): the name of the CSA metric (Ga or Gna)
+        scores_aggregated_data (pd.DataFrame): the aggregated performance scores (mean across splits)
         vmin (float): the minimum value of the colorbar
         vmax (float): the maximum value of the colorbar
         outdir (Path): the directory to save the plot
@@ -603,17 +669,18 @@ def stgi_heatmap(
     norm = Normalize(vmin=threshold, vmax=vmax)
 
     # Name map for models
-    scores_stgi_data.index = [model_name_mapping[model] for model in scores_stgi_data.index]
+    scores_aggregated_data.index = [model_name_mapping[model] for model in scores_aggregated_data.index]
 
     # Combine scores and stds for annotations with specified decimal digits
-    combined_annotations = scores_stgi_data.round(decimal_digits).astype(str)
-    title = f"Source-to-Target Generalization Index (STGI)"
+    combined_annotations = scores_aggregated_data.round(decimal_digits).astype(str)
+    # title = f"Source-to-Target Generalization Index (STGI)"
+    title = f"${csa_metric_name}$ (all models combined)"
     filename = f"{metric_name}_heatmap.png"
 
     # Plot the heatmap
     plt.figure(figsize=(7, 5))
     sns.heatmap(
-        scores_stgi_data, 
+        scores_aggregated_data, 
         annot=combined_annotations.values,
         fmt="", 
         cmap=cmap, 
@@ -628,7 +695,8 @@ def stgi_heatmap(
     colorbar.set_ticks([threshold, 0, 0.5, vmax])
     colorbar.set_ticklabels([f"≤ {threshold}", "0", "0.5", f"≤ {vmax}"])
     colorbar.ax.tick_params(labelsize=cbar_fontsize)  # Set font size for colorbar ticks
-    colorbar.set_label(f'{metrics_name_mapping[metric_name]} Score', fontsize=cbar_fontsize)  # Set font size for label
+    # colorbar.set_label(f'{metrics_name_mapping[metric_name]} Score', fontsize=cbar_fontsize)  # Set font size for label
+    colorbar.set_label(f'{metric_name} score', fontsize=cbar_fontsize)  # Set font size for label
 
     # Finalize plot
     plt.title(title, fontsize=title_fontsize)
