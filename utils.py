@@ -90,7 +90,7 @@ def boxplot_violinplot_within_study(
         None
     """
     # Plot settings
-    title = f"{metrics_name_mapping[metric_name]} Prediction Performance (src=trg)" if title is None else title
+    title = f"{metrics_name_mapping[metric_name]} Prediction Performance (source=target)" if title is None else title
     ylabel = f"{metrics_name_mapping[metric_name]} Score" if ylabel is None else ylabel
     xlabel = "Dataset" if xlabel is None else xlabel
     xlabel_rotation = 45 if xlabel_rotation is None else xlabel_rotation
@@ -202,7 +202,7 @@ def boxplot_violinplot_cross_study(
         None
     """
     # Plot settings
-    title = f"{metrics_name_mapping[metric_name]} Prediction Generalization from {source_dataset} to Target Datasets (src!=trg)"
+    title = f"{metrics_name_mapping[metric_name]} Prediction Generalization from {source_dataset} to Target Datasets (source \u2260 target)" if title is None else title
     ylabel = f"{metrics_name_mapping[metric_name]} Score"
     xlabel = "Target Dataset"
     xlabel_rotation = 45
@@ -327,10 +327,10 @@ def csa_heatmap(
             scores_csa_data.round(decimal_digits).astype(str) + 
             "\n(" + std_csa_data.round(decimal_digits).astype(str) + ")"
         )
-        filename = f"{metric_name}_{model_name}_csa_heatmap_with_stds.png"
+        filename = f"{metric_name}_{model_name}_{csa_metric_name}_heatmap_with_stds.png"
     else:
         combined_annotations = scores_csa_data.round(decimal_digits).astype(str)
-        filename = f"{metric_name}_{model_name}_csa_heatmap.png"
+        filename = f"{metric_name}_{model_name}_{csa_metric_name}_heatmap.png"
     title = f"${csa_metric_name}$ matrix for {model_name_mapping[model_name]}"
 
     # Plot the heatmap
@@ -675,7 +675,7 @@ def aggregated_G_heatmap(
     combined_annotations = scores_aggregated_data.round(decimal_digits).astype(str)
     # title = f"Source-to-Target Generalization Index (STGI)"
     title = f"${csa_metric_name}$ (all models combined)"
-    filename = f"{metric_name}_heatmap.png"
+    filename = f"{metric_name}_{csa_metric_name}_heatmap.png"
 
     # Plot the heatmap
     plt.figure(figsize=(7, 5))
