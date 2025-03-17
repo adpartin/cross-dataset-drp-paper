@@ -9,7 +9,7 @@ echo "This path: $this_path"
 
 ## Clone IMPROVE lib (if needed)
 ##cd ../
-#improve_lib_path=$PWD/IMPROVE
+improve_lib_path=$PWD/IMPROVE
 #improve_branch="develop"
 #if [ -d $improve_lib_path ]; then
 #  echo "IMPROVE repo exists in ${improve_lib_path}"

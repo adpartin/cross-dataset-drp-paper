@@ -10,7 +10,7 @@ To reproduce the paper's results:
 1. Clone this repository
 2. Create computational environment
     ```bash
-    bash ./setup_improve.sh
+    source ./setup_improve.sh
     conda env create -f environment.yml
     conda activate drp-benchmark
     ```
