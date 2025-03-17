@@ -52,3 +52,6 @@ If you want to recompute scores from raw predictions:
 - Input: Scores (from Stage 2) and CSA tables (from Stage 3) all located in [`splits_averaged`](./splits_averaged/)
 - Output: Plots for the paper saved in [`results_for_paper`](./results_for_paper/)
 
+
+#### Location
+The data is located in `/nfs/ml_lab/projects/improve/data/experiments` on Lambda (Argonne's GPU cluster)
