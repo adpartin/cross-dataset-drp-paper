@@ -37,18 +37,18 @@ If you want to recompute scores from raw predictions:
 ### Stage 2: Compute Scores (Optional)
 - Script: `stage2_compute_scores.py`
 - Input: Test set predictions from Stage 1 (`./test_preds/`)
-- Output: The computed scores are stored in the [`splits_averaged/`](./splits_averaged/) directory
+- Output: The computed scores are stored in the [`splits_averaged`](./splits_averaged/) directory
 - Runtime: ~70 minutes
 
 ### Stage 3: Paper Data Generation (Public Use)
 - Script: `stage3_generate_csa_tables.py`
-- Input: Scores from Stage 2 (provided in [`splits_averaged/`](./splits_averaged/))
-- Output: CSA tables stored in [`splits_averaged/`](./splits_averaged/)
+- Input: Scores from Stage 2 (provided in [`splits_averaged`](./splits_averaged/))
+- Output: CSA tables stored in [`splits_averaged`](./splits_averaged/)
 - Runtime: few seconds
 - Note: This is the main entry point for reproducing paper results
 
 ### Stage 4: Generate Paper Plots
 - Notebook: `stage4_generate_paper_plots.ipynb`
-- Input: Scores (from Stage 2) and CSA tables (from Stage 3) all located in  [`splits_averaged/`](./splits_averaged/)
-- Output: Plots for the paper saved in [`results_for_paper/`](./results_for_paper/)
+- Input: Scores (from Stage 2) and CSA tables (from Stage 3) all located in [`splits_averaged`](./splits_averaged/)
+- Output: Plots for the paper saved in [`results_for_paper`](./results_for_paper/)
 
