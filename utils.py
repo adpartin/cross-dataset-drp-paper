@@ -14,8 +14,8 @@ from matplotlib.colors import BoundaryNorm, ListedColormap, Normalize
 # filepath = Path(__file__).parent
 # filepath = Path(os.path.abspath(''))
 
-canc_col_name = "improve_sample_id"
-drug_col_name = "improve_chem_id"
+canc_col_name = 'improve_sample_id'
+drug_col_name = 'improve_chem_id'
 
 model_name_mapping = {
     "deepcdr": "DeepCDR",
