@@ -30,7 +30,7 @@ def main():
     args = parser.parse_args()
     
     outdir = Path(args.outdir)
-    setup_logging(log_file='stage1_raw_preds.log') # stage1 log file
+    setup_logging(log_file='stage1_collect_raw_predictions.log') # stage1 log file
     
     # Get model paths
     main_models_path = Path(args.runs_dir)
