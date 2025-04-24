@@ -39,7 +39,9 @@ def boxplot_violinplot_within_study(
     df: pd.DataFrame, 
     metric_name: str, 
     models_to_include: list = [],
-    outdir: Path = Path("."), 
+    outdir: Path = Path("."),
+    file_format: str = "eps",
+    dpi: int = 600,
     palette: str = "muted", # "Set3", "species"
     title: str = None, 
     ylabel: str = None, 
@@ -66,6 +68,8 @@ def boxplot_violinplot_within_study(
         metric_name (str): the name of the metric to plot
         models_to_include (list): the models to include in the plot
         outdir (Path): the directory to save the plot
+        file_format (str): output file figure format
+        dpi (int): figure resolution in dots per inch
         palette (str): the palette to use for the plot
         title (str): the title of the plot
         ylabel (str): the y-axis label of the plot
@@ -114,7 +118,7 @@ def boxplot_violinplot_within_study(
         plt.ylim(ymin if ymin is not None else plt.ylim()[0], ymax if ymax is not None else plt.ylim()[1])
 
     plt.tight_layout()
-    plt.savefig(outdir / f"boxplot_{metric_name}_within_study_multiple_models.png")
+    plt.savefig(outdir / f"boxplot_{metric_name}_within_study_multiple_models.{file_format}", format=file_format, dpi=dpi)
     if show:
         plt.show()
 
@@ -137,7 +141,7 @@ def boxplot_violinplot_within_study(
         plt.ylim(ymin if ymin is not None else plt.ylim()[0], ymax if ymax is not None else plt.ylim()[1])
 
     plt.tight_layout()
-    plt.savefig(outdir / f"violinplot_{metric_name}_within_study_multiple_models.png", dpi=300)
+    plt.savefig(outdir / f"violinplot_{metric_name}_within_study_multiple_models.{file_format}", format=file_format, dpi=dpi)
     if show:
         plt.show()
 
@@ -149,7 +153,9 @@ def boxplot_violinplot_cross_study(
     source_dataset: str,
     metric_name: str, 
     models_to_include: list = [],
-    outdir: Path = Path("."), 
+    outdir: Path = Path("."),
+    file_format: str = "eps",
+    dpi: int = 600,
     palette: str = "muted", # "Set3", "species"
     title: str = None, 
     ylabel: str = None, 
@@ -177,6 +183,8 @@ def boxplot_violinplot_cross_study(
         metric_name (str): the name of the metric to plot
         models_to_include (list): the models to include in the plot
         outdir (Path): the directory to save the plot
+        file_format (str): output file figure format
+        dpi (int): figure resolution in dots per inch
         palette (str): the palette to use for the plot
         title (str): the title of the plot
         ylabel (str): the y-axis label of the plot
@@ -230,7 +238,7 @@ def boxplot_violinplot_cross_study(
     plt.tight_layout()
 
     # Save the boxplot
-    plt.savefig(outdir / f"boxplot_{metric_name}_cross_study_from_{source_dataset}_to_targets.png", dpi=300)
+    plt.savefig(outdir / f"boxplot_{metric_name}_cross_study_from_{source_dataset}_to_targets.{file_format}", format=file_format, dpi=dpi)
     if show:
         plt.show()
     else:
@@ -257,7 +265,7 @@ def boxplot_violinplot_cross_study(
     plt.tight_layout()
 
     # Save the violin plot
-    plt.savefig(outdir / f"violinplot_{metric_name}_cross_study_from_{source_dataset}_to_targets.png", dpi=300)
+    plt.savefig(outdir / f"violinplot_{metric_name}_cross_study_from_{source_dataset}_to_targets.{file_format}", format=file_format, dpi=dpi)
     if show:
         plt.show()
     else:
@@ -275,6 +283,8 @@ def csa_heatmap(
     vmin: float = -0.5,
     vmax: float = 1,
     outdir: Path = Path("."),
+    file_format: str = "eps",
+    dpi: int = 600,
     palette: str = "Blues",
     decimal_digits: int = 3,
     show: bool = True,
@@ -300,6 +310,8 @@ def csa_heatmap(
         vmin (float): the minimum value of the colorbar
         vmax (float): the maximum value of the colorbar
         outdir (Path): the directory to save the plot
+        file_format (str): output file figure format
+        dpi (int): figure resolution in dots per inch
         palette (str): the palette to use for the plot
         decimal_digits (int): the number of decimal digits to show in annotations
         show (bool): whether to show the plot
@@ -327,10 +339,10 @@ def csa_heatmap(
             scores_csa_data.round(decimal_digits).astype(str) + 
             "\n(" + std_csa_data.round(decimal_digits).astype(str) + ")"
         )
-        filename = f"{metric_name}_{model_name}_{csa_metric_name}_heatmap_with_stds.png"
+        filename = f"{metric_name}_{model_name}_{csa_metric_name}_heatmap_with_stds.{file_format}"
     else:
         combined_annotations = scores_csa_data.round(decimal_digits).astype(str)
-        filename = f"{metric_name}_{model_name}_{csa_metric_name}_heatmap.png"
+        filename = f"{metric_name}_{model_name}_{csa_metric_name}_heatmap.{file_format}"
     title = f"${csa_metric_name}$ matrix for {model_name_mapping[model_name]}"
 
     # Plot the heatmap
@@ -360,7 +372,7 @@ def csa_heatmap(
     plt.xlabel("Target Dataset", fontsize=xlabel_fontsize)
     plt.ylabel("Source Dataset", fontsize=ylabel_fontsize)
     plt.tight_layout()
-    plt.savefig(outdir / filename, dpi=300)
+    plt.savefig(outdir / filename, format=file_format, dpi=dpi)
     if show:
         plt.show()
     else:
@@ -622,6 +634,8 @@ def aggregated_G_heatmap(
     vmin: float = -0.5,
     vmax: float = 1,
     outdir: Path = Path("."),
+    file_format: str = "eps",
+    dpi: int = 600,
     palette: str = "plasma",
     decimal_digits: int = 3,
     title_fontsize: int = 12,
@@ -643,6 +657,8 @@ def aggregated_G_heatmap(
         vmin (float): the minimum value of the colorbar
         vmax (float): the maximum value of the colorbar
         outdir (Path): the directory to save the plot
+        file_format (str): output file figure format
+        dpi (int): figure resolution in dots per inch
         palette (str): the palette to use for the plot
         decimal_digits (int): the number of decimal digits to show in annotations
         title_fontsize (int): the font size of the title
@@ -675,7 +691,7 @@ def aggregated_G_heatmap(
     combined_annotations = scores_aggregated_data.round(decimal_digits).astype(str)
     # title = f"Source-to-Target Generalization Index (STGI)"
     title = f"${csa_metric_name}$ (all models combined)"
-    filename = f"{metric_name}_{csa_metric_name}_heatmap.png"
+    filename = f"{metric_name}_{csa_metric_name}_heatmap.{file_format}"
 
     # Plot the heatmap
     plt.figure(figsize=(7, 5))
@@ -705,7 +721,7 @@ def aggregated_G_heatmap(
     plt.xlabel("Source Dataset", fontsize=xlabel_fontsize)
     plt.ylabel("Model", fontsize=ylabel_fontsize)
     plt.tight_layout()
-    plt.savefig(outdir / filename, dpi=300)
+    plt.savefig(outdir / filename, format=file_format, dpi=dpi)
     if show:
         plt.show()
     else:
