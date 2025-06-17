@@ -19,6 +19,7 @@ drug_col_name = 'improve_chem_id'
 
 model_name_mapping = {
     "deepcdr": "DeepCDR",
+    "deepttc": "DeepTTC",
     "graphdrp": "GraphDRP",
     "hidra": "HiDRA",
     "lgbm": "LGBM",
