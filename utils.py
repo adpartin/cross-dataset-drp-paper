@@ -1,8 +1,5 @@
-import json
 import os
-import warnings
 from pathlib import Path
-from pprint import pprint
 from typing import Optional
 
 import numpy as np
@@ -113,6 +110,7 @@ def boxplot_violinplot_within_study(
     plt.xlabel(xlabel, fontsize=xlabel_fontsize)
     plt.yticks(fontsize=ytick_fontsize)
     plt.xticks(rotation=xlabel_rotation, fontsize=xtick_fontsize)
+    plt.grid(True)
 
     # Set y-axis limits if provided
     if ymin is not None or ymax is not None:
@@ -136,6 +134,7 @@ def boxplot_violinplot_within_study(
     plt.xlabel(xlabel, fontsize=xlabel_fontsize)
     plt.yticks(fontsize=ytick_fontsize)
     plt.xticks(rotation=xlabel_rotation, fontsize=xtick_fontsize)
+    plt.grid(True)
 
     # Set y-axis limits if provided
     if ymin is not None or ymax is not None:
@@ -230,8 +229,8 @@ def boxplot_violinplot_cross_study(
     plt.xlabel(xlabel, fontsize=xlabel_fontsize)
     plt.yticks(fontsize=ytick_fontsize)
     plt.xticks(rotation=xlabel_rotation, fontsize=xtick_fontsize)
+    plt.grid(True)
     
-
     # Set y-axis limits if provided
     if ymin is not None or ymax is not None:
         plt.ylim(ymin if ymin is not None else plt.ylim()[0], ymax if ymax is not None else plt.ylim()[1])
@@ -258,6 +257,7 @@ def boxplot_violinplot_cross_study(
     plt.xlabel(xlabel, fontsize=xlabel_fontsize)
     plt.yticks(fontsize=ytick_fontsize)
     plt.xticks(rotation=xlabel_rotation, fontsize=xtick_fontsize)
+    plt.grid(True)
 
     # Set y-axis limits if provided
     if ymin is not None or ymax is not None:
