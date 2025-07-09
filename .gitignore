@@ -8,5 +8,9 @@ __pypackages__/
 # IMPROVE
 .vscode/
 *.log
+nbs/
 test_preds/
 val_preds/
+test_preds_before_2025_06_16/
+val_preds_before_2025_06_16/
+splits_averaged_before_2025_06_16/
