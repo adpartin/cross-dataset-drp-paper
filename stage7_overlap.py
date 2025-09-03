@@ -224,21 +224,6 @@ def filter_same_assay_pairs(labels: List[Tuple[str, str]], assay_map: Dict[str, 
 # Plotting (matplotlib only)
 # ----------------------------
 
-# def plot_heatmap(df: pd.DataFrame, title: str, out_png: Path, vmin=None, vmax=None, cmap='viridis', fmt='{:.2f}'):
-#     fig, ax = plt.subplots(figsize=(7, 5.5))
-#     im = ax.imshow(df.values, aspect='auto', vmin=vmin, vmax=vmax, cmap=cmap)
-#     ax.set_xticks(range(len(df.columns))); ax.set_xticklabels(list(df.columns), rotation=45, ha='right')
-#     ax.set_yticks(range(len(df.index))); ax.set_yticklabels(list(df.index))
-#     ax.set_xlabel("Target"); ax.set_ylabel("Source"); ax.set_title(title)
-#     for i in range(len(df.index)):
-#         for j in range(len(df.columns)):
-#             val = df.iat[i, j]
-#             try: text = fmt.format(val)
-#             except Exception: text = str(val)
-#             ax.text(j, i, text, ha='center', va='center', fontsize=8,
-#                     color='white' if (im.norm(val) > 0.5) else 'black')
-#     cbar = plt.colorbar(im, ax=ax); cbar.set_label(title, rotation=270, labelpad=12)
-#     plt.tight_layout(); plt.savefig(out_png, dpi=300); plt.close(); return True
 def plot_heatmap(
     df: pd.DataFrame,
     title: str,
@@ -284,23 +269,6 @@ def plot_heatmap(
     return True
 
 
-# def plot_scatter(x, y, labels, assay_map, title, out_png, xlabel):
-#     fig, ax = plt.subplots(figsize=(6.5, 5.2))
-#     mask_same = np.array(filter_same_assay_pairs(labels, assay_map))
-#     mask_diff = ~mask_same
-#     ax.scatter(x[mask_same], y[mask_same], alpha=0.8, label='Same assay', s=40)
-#     ax.scatter(x[mask_diff], y[mask_diff], alpha=0.8, label='Different assay', s=40)
-#     ax.set_xlabel(xlabel); ax.set_ylabel("Cross-dataset performance G(S,T)"); ax.set_title(title)
-#     rho_all, p_all = spearmanr(x, y, nan_policy='omit')
-#     rho_same, p_same = (np.nan, np.nan)
-#     if np.any(mask_same):
-#         rho_same, p_same = spearmanr(x[mask_same], y[mask_same], nan_policy='omit')
-#     txt = f"Spearman ρ (all) = {rho_all:.2f} (p={p_all:.3g})"
-#     if not np.isnan(rho_same): txt += f"\nSpearman ρ (same assay) = {rho_same:.2f} (p={p_same:.3g})"
-#     ax.text(0.02, 0.98, txt, transform=ax.transAxes, ha='left', va='top', fontsize=9,
-#             bbox=dict(boxstyle='round', facecolor='white', alpha=0.7, edgecolor='none'))
-#     ax.legend(loc='lower right', frameon=True); ax.grid(True, alpha=0.3)
-#     plt.tight_layout(); plt.savefig(out_png, dpi=300); plt.close(); return True
 def plot_scatter(
     x: np.ndarray,
     y: np.ndarray,
