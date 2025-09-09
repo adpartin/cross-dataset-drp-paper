@@ -38,6 +38,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import spearmanr
 
+import importlib
+# import utils  # Import your module
+from utils import model_name_mapping
+
 filepath = Path(os.path.abspath(''))
 
 results_outdir = filepath / 'results_for_paper_revision_2'
@@ -69,6 +73,18 @@ ASSAY_MAP = {
     'GDSCv2': 'CTG',
 }
 
+# FILE_FORMAT = "png"
+FILE_FORMAT = "eps"
+
+# model = 'deepcdr'
+# model = 'deepttc'
+# model = 'graphdrp'
+# model = 'hidra'
+# model = 'lgbm'
+# model = 'tcnns'
+model = 'uno'
+model_name = model_name_mapping[model]
+
 # ----------------------------
 # Filename parsing helpers
 # ----------------------------
@@ -81,7 +97,10 @@ def parse_filename(path: Path) -> Optional[dict]:
     m = FILENAME_RE.match(path.name)
     return m.groupdict() if m else None
 
-def choose_representative_file(preds_dir: Path, target: str, default_map: Dict[str, str]) -> Path:
+def choose_representative_file(
+    preds_dir: Path,
+    target: str,
+    default_map: Dict[str, str]) -> Path:
     """
     Choose one CSV whose TARGET == target and ideally SRC != TRG (to ensure full coverage).
     Preference order:
@@ -107,11 +126,14 @@ def choose_representative_file(preds_dir: Path, target: str, default_map: Dict[s
         return matches[0]
 
     p = pick(f"*_{target}_split_0_*.csv", prefer_src_neq_trg=True)
-    if p: return p
+    if p:
+        return p
     p = pick(f"*_{target}_split_*_*.csv", prefer_src_neq_trg=True)
-    if p: return p
+    if p:
+        return p
     p = pick(f"*_{target}_split_*_*.csv", prefer_src_neq_trg=False)
-    if p: return p
+    if p:
+        return p
 
     raise FileNotFoundError(f"No prediction CSV found for target '{target}' in {preds_dir}")
 
@@ -136,7 +158,7 @@ def build_entity_sets(
     dataset_order: List[str] = DATASET_ORDER,
     default_map: Dict[str, str] = DEFAULT_REP_FILES,
     log_label: str = "entity"
-) -> Dict[str, Set[str]]:
+    ) -> Dict[str, Set[str]]:
     """
     Discover TARGET datasets in preds_dir and build {dataset: set(ids)} for the given column.
     Uses one representative TARGET CSV per dataset (SRC != TRG preferred).
@@ -167,7 +189,7 @@ def build_entity_sets(
 def compute_overlap_matrices(
     entity_sets: Dict[str, Set[str]],
     dataset_order: Optional[List[str]] = None
-) -> Dict[str, pd.DataFrame]:
+    ) -> Dict[str, pd.DataFrame]:
     """
     Given per-dataset sets, compute:
       - overlap_count (|Ei ∩ Ej|) [symmetric]
@@ -200,7 +222,10 @@ def load_performance_matrix(g_csv: Path) -> pd.DataFrame:
     G = pd.read_csv(g_csv, index_col=0)
     return G.apply(pd.to_numeric, errors='coerce')
 
-def flatten_offdiag(A: pd.DataFrame, B: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray, List[Tuple[str, str]]]:
+def flatten_offdiag(
+    A: pd.DataFrame,
+    B: pd.DataFrame
+    ) -> Tuple[np.ndarray, np.ndarray, List[Tuple[str, str]]]:
     A2, B2 = A.align(B, join='inner', axis=0)
     A2, B2 = A2.align(B2, join='inner', axis=1)
     xs, ys, labels = [], [], []
@@ -234,17 +259,18 @@ def plot_heatmap(
     fmt='{:.2f}'
 ):
     """Simple annotated heatmap for small matrices (rows=sources, cols=targets)."""
-    fig, ax = plt.subplots(figsize=(7, 5.5))
+    fig, ax = plt.subplots(figsize=(6.5, 5))
     im = ax.imshow(df.values, aspect='auto', vmin=vmin, vmax=vmax, cmap=cmap)
 
     ax.set_xticks(range(len(df.columns)))
-    ax.set_xticklabels(list(df.columns), rotation=45, ha='right')
+    ax.set_xticklabels(list(df.columns), rotation=45, ha='right', fontsize=11)
     ax.set_yticks(range(len(df.index)))
-    ax.set_yticklabels(list(df.index))
+    ax.set_yticklabels(list(df.index), fontsize=11)
 
-    ax.set_xlabel("Target")
-    ax.set_ylabel("Source")
-    ax.set_title(title)
+    ax.set_xlabel("Target Dataset", fontsize=11)
+    ax.set_ylabel("Source Dataset", fontsize=11)
+    plt.xticks(rotation=0, ha='center')
+    ax.set_title(title, fontsize=12)
 
     # Annotate each cell with a value string; choose text color by normalized intensity
     for i in range(len(df.index)):
@@ -256,12 +282,12 @@ def plot_heatmap(
                 text = str(val)
             ax.text(
                 j, i, text,
-                ha='center', va='center', fontsize=8,
+                ha='center', va='center', fontsize=11,
                 color='white' if (im.norm(val) > 0.5) else 'black'
             )
 
     cbar = plt.colorbar(im, ax=ax)
-    cbar.set_label(title, rotation=270, labelpad=12)
+    # cbar.set_label(title, rotation=270, labelpad=12)
 
     plt.tight_layout()
     plt.savefig(out_png, dpi=300)
@@ -311,12 +337,13 @@ def plot_scatter(
         )
 
     ax.set_xlabel(xlabel)
-    ax.set_ylabel("Cross-dataset performance G(S,T)")
+    ax.set_ylabel("Cross-dataset performance, g(s,t)")
     ax.set_title(title)
 
     # Correlations (Spearman)
     rho_all, p_all = spearmanr(x, y, nan_policy='omit')
-    txt = f"Spearman ρ (all) = {rho_all:.2f} (p={p_all:.3g})"
+    # txt = f"Spearman ρ (all) = {rho_all:.2f} (p={p_all:.3g})"
+    txt = f"Spearman ρ = {rho_all:.2f} (p={p_all:.3g})"
 
     if show_assay_split:
         mask_same = np.array(filter_same_assay_pairs(labels, assay_map))
@@ -342,39 +369,37 @@ def plot_scatter(
 # ----------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="Drug & cell overlap vs performance (G)")
+    parser = argparse.ArgumentParser(description="Drug and cell coverage vs performance (G)")
     parser.add_argument('--outdir_name', type=str, default='reviewer2_comment1',
                         help='Output directory for CSVs and plots')
     args = parser.parse_args()
 
     preds_dir = filepath / 'test_preds'
     g_dir = filepath / 'results_for_paper'
-    model_name = 'lgbm'
-    g_csv = g_dir / f'{model_name}_r2_G_mean.csv'
-
+    g_csv = g_dir / f'{model}_r2_G_mean.csv'
     outdir = results_outdir / Path(args.outdir_name)
     outdir.mkdir(parents=True, exist_ok=True)
 
     # === DRUGS ===
     drug_sets = build_entity_sets(preds_dir, REQUIRED_DRUG_COL, DATASET_ORDER, DEFAULT_REP_FILES, log_label="drug")
     drug_mats = compute_overlap_matrices(drug_sets, DATASET_ORDER)
-    drug_count = drug_mats["overlap_count"]
-    drug_jacc  = drug_mats["overlap_jaccard"]
+    # drug_count = drug_mats["overlap_count"]
+    # drug_jacc  = drug_mats["overlap_jaccard"]
     drug_covg  = drug_mats["directional_coverage"]
     # Save
-    drug_count.to_csv(outdir / "drug_overlap_count.csv")
-    drug_jacc.to_csv(outdir / "drug_overlap_jaccard.csv")
+    # drug_count.to_csv(outdir / "drug_overlap_count.csv")
+    # drug_jacc.to_csv(outdir / "drug_overlap_jaccard.csv")
     drug_covg.to_csv(outdir / "drug_directional_coverage.csv")
 
     # === CELLS ===
     cell_sets = build_entity_sets(preds_dir, REQUIRED_CELL_COL, DATASET_ORDER, DEFAULT_REP_FILES, log_label="cell")
     cell_mats = compute_overlap_matrices(cell_sets, DATASET_ORDER)
-    cell_count = cell_mats["overlap_count"]
-    cell_jacc  = cell_mats["overlap_jaccard"]
+    # cell_count = cell_mats["overlap_count"]
+    # cell_jacc  = cell_mats["overlap_jaccard"]
     cell_covg  = cell_mats["directional_coverage"]
     # Save
-    cell_count.to_csv(outdir / "cell_overlap_count.csv")
-    cell_jacc.to_csv(outdir / "cell_overlap_jaccard.csv")
+    # cell_count.to_csv(outdir / "cell_overlap_count.csv")
+    # cell_jacc.to_csv(outdir / "cell_overlap_jaccard.csv")
     cell_covg.to_csv(outdir / "cell_directional_coverage.csv")
 
     # === Load G and align ===
@@ -389,69 +414,62 @@ def main():
 
     # Optional: counts/jaccard heatmaps (drug & cell)
     # (kept since they’re cheap and occasionally informative)
-    dcount_aligned, _ = drug_count.align(G_aligned, join='inner', axis=0)
-    dcount_aligned, _ = dcount_aligned.align(G_aligned, join='inner', axis=1)
-    djacc_aligned, _  = drug_jacc.align(G_aligned, join='inner', axis=0)
-    djacc_aligned, _  = djacc_aligned.align(G_aligned, join='inner', axis=1)
+    # dcount_aligned, _ = drug_count.align(G_aligned, join='inner', axis=0)
+    # dcount_aligned, _ = dcount_aligned.align(G_aligned, join='inner', axis=1)
+    # djacc_aligned, _  = drug_jacc.align(G_aligned, join='inner', axis=0)
+    # djacc_aligned, _  = djacc_aligned.align(G_aligned, join='inner', axis=1)
 
-    ccount_aligned, _ = cell_count.align(G_aligned, join='inner', axis=0)
-    ccount_aligned, _ = ccount_aligned.align(G_aligned, join='inner', axis=1)
-    cjacc_aligned, _  = cell_jacc.align(G_aligned, join='inner', axis=0)
-    cjacc_aligned, _  = cjacc_aligned.align(G_aligned, join='inner', axis=1)
+    # ccount_aligned, _ = cell_count.align(G_aligned, join='inner', axis=0)
+    # ccount_aligned, _ = ccount_aligned.align(G_aligned, join='inner', axis=1)
+    # cjacc_aligned, _  = cell_jacc.align(G_aligned, join='inner', axis=0)
+    # cjacc_aligned, _  = cjacc_aligned.align(G_aligned, join='inner', axis=1)
 
     # === Heatmaps ===
-    plot_heatmap(dcount_aligned, "Drug overlap count |Di ∩ Dj|",
-                 outdir / "heatmap_drug_overlap_count.png",
-                 cmap='YlOrRd', fmt='{:.0f}')
-    plot_heatmap(djacc_aligned, "Drug overlap Jaccard |Di ∩ Dj| / |Di ∪ Dj|",
-                 outdir / "heatmap_drug_overlap_jaccard.png",
-                 cmap='YlOrBr', vmin=0, vmax=1)
-    plot_heatmap(drug_covg_aligned, "Directional drug coverage (S→T)",
-                 outdir / "heatmap_directional_drug_coverage.png",
+    # plot_heatmap(dcount_aligned,
+    #              title="Drug overlap count |Di ∩ Dj|",
+    #              out_png=outdir / f"heatmap_drug_overlap_count.{FILE_FORMAT}",
+    #              cmap='YlOrRd', fmt='{:.0f}')
+    # plot_heatmap(djacc_aligned,
+    #              title="Drug overlap Jaccard |Di ∩ Dj| / |Di ∪ Dj|",
+    #              out_png=outdir / f"heatmap_drug_overlap_jaccard.{FILE_FORMAT}",
+    #              cmap='YlOrBr', vmin=0, vmax=1)
+    plot_heatmap(drug_covg_aligned,
+                 title="Drug-set coverage (source-to-target)",
+                 out_png=outdir / f"heatmap_directional_drug_coverage.{FILE_FORMAT}",
                  cmap='Oranges', vmin=0, vmax=1)
 
-    plot_heatmap(ccount_aligned, "Cell overlap count |Ci ∩ Cj|",
-                 outdir / "heatmap_cell_overlap_count.png",
-                 cmap='PuBuGn', fmt='{:.0f}')
-    plot_heatmap(cjacc_aligned, "Cell overlap Jaccard |Ci ∩ Cj| / |Ci ∪ Cj|",
-                 outdir / "heatmap_cell_overlap_jaccard.png",
-                 cmap='Greens', vmin=0, vmax=1)
-    plot_heatmap(cell_covg_aligned, "Directional cell coverage (S→T)",
-                 outdir / "heatmap_directional_cell_coverage.png",
+    # plot_heatmap(ccount_aligned,
+    #              title="Cell-line overlap count |Ci ∩ Cj|",
+    #              out_png=outdir / f"heatmap_cell_overlap_count.{FILE_FORMAT}",
+    #              cmap='PuBuGn', fmt='{:.0f}')
+    # plot_heatmap(cjacc_aligned,
+    #              title="Cell-line overlap Jaccard |Ci ∩ Cj| / |Ci ∪ Cj|",
+    #              out_png=outdir / f"heatmap_cell_overlap_jaccard.{FILE_FORMAT}",
+    #              cmap='Greens', vmin=0, vmax=1)
+    plot_heatmap(cell_covg_aligned,
+                 title="Cell-line coverage (source-to-target)",
+                 out_png=outdir / f"heatmap_directional_cell_coverage.{FILE_FORMAT}",
                  cmap='Purples', vmin=0, vmax=1)
 
     # === Scatter + Spearman (off-diagonals) ===
+    print(f'Model: {model_name}')
     # Drug
     x_d, y_d, labels_d = flatten_offdiag(drug_covg_aligned, G_aligned)
-    # plot_scatter(
-    #     x_d, y_d, labels_d, ASSAY_MAP,
-    #     "Drug coverage vs Performance",
-    #     outdir / "scatter_drug_coverage_vs_G_all.png",
-    #     xlabel="Directional drug coverage (S→T) = |Ds ∩ Dt| / |Dt|",
-    #     show_assay_split=False
-    # )
-    # plot_scatter(
-    #     x_d, y_d, labels_d, ASSAY_MAP,
-    #     "Drug coverage vs Performance",
-    #     outdir / "scatter_drug_coverage_vs_G_by_assay.png",
-    #     xlabel="Directional drug coverage (S→T) = |Ds ∩ Dt| / |Dt|",
-    #     show_assay_split=True
-    # )
     # single-color
     plot_scatter(
         x_d, y_d, labels_d, ASSAY_MAP,
-        "Drug coverage vs Performance",
-        outdir / "scatter_drug_coverage_vs_G_all.png",
-        xlabel="Directional drug coverage (S→T) = |Ds ∩ Dt| / |Dt|",
+        title=f"Cross-dataset performance vs Drug-set coverage ({model_name})",
+        out_png=outdir / f"scatter_drug_coverage_vs_G_all_{model}.{FILE_FORMAT}",
+        xlabel="Drug-set coverage (source-to-target), |Ds ∩ Dt| / |Dt|", # |Ds ∩ Dt| / |Dt|
         show_assay_split=False,
         color_all='tab:orange'
     )
     # assay-split
     plot_scatter(
         x_d, y_d, labels_d, ASSAY_MAP,
-        "Drug coverage vs Performance (by assay)",
-        outdir / "scatter_drug_coverage_vs_G_by_assay.png",
-        xlabel="Directional drug coverage (S→T) = |Ds ∩ Dt| / |Dt|",
+        title=f"Cross-dataset performance vs Drug-set coverage (by assay) ({model_name})",
+        out_png=outdir / f"scatter_drug_coverage_vs_G_by_assay_{model}.{FILE_FORMAT}",
+        xlabel="Drug-set coverage (source-to-target), |Ds ∩ Dt| / |Dt|", # |Ds ∩ Dt| / |Dt|
         show_assay_split=True,
         color_same='tab:orange',
         color_diff='0.55'   # medium gray
@@ -465,34 +483,21 @@ def main():
 
     # Cell
     x_c, y_c, labels_c = flatten_offdiag(cell_covg_aligned, G_aligned)
-    # plot_scatter(
-    #     x_c, y_c, labels_c, ASSAY_MAP,
-    #     "Cell coverage vs Performance", outdir / "scatter_cell_coverage_vs_G_all.png",
-    #     xlabel="Directional cell coverage (S→T) = |Cs ∩ Ct| / |Ct|",
-    #     show_assay_split=False
-    # )
-    # plot_scatter(
-    #     x_c, y_c, labels_c, ASSAY_MAP,
-    #     "Cell coverage vs Performance",
-    #     outdir / "scatter_cell_coverage_vs_G_by_assay.png",
-    #     xlabel="Directional cell coverage (S→T) = |Cs ∩ Ct| / |Ct|",
-    #     show_assay_split=True
-    # )
     # single-color
     plot_scatter(
         x_c, y_c, labels_c, ASSAY_MAP,
-        "Cell coverage vs Performance",
-        outdir / "scatter_cell_coverage_vs_G_all.png",
-        xlabel="Directional cell coverage (S→T) = |Cs ∩ Ct| / |Ct|",
+        title=f"Cross-dataset performance vs Cell-line coverage ({model_name})",
+        out_png=outdir / f"scatter_cell_coverage_vs_G_all_{model}.{FILE_FORMAT}",
+        xlabel="Cell-line coverage (source-to-target), |Cs ∩ Ct| / |Ct|", # |Cs ∩ Ct| / |Ct|
         show_assay_split=False,
         color_all='tab:purple'
     )
     # assay-split
     plot_scatter(
         x_c, y_c, labels_c, ASSAY_MAP,
-        "Cell coverage vs Performance (by assay)",
-        outdir / "scatter_cell_coverage_vs_G_by_assay.png",
-        xlabel="Directional cell coverage (S→T) = |Cs ∩ Ct| / |Ct|",
+        title=f"Cross-dataset performance vs Cell-line coverage (by assay) ({model_name})",
+        out_png=outdir / f"scatter_cell_coverage_vs_G_by_assay_{model}.{FILE_FORMAT}",
+        xlabel="Cell-line coverage (source-to-target), |Cs ∩ Ct| / |Ct|", # |Cs ∩ Ct| / |Ct|
         show_assay_split=True,
         color_same='tab:purple',
         color_diff='0.55'
