@@ -11,6 +11,8 @@ __pypackages__/
 nbs/
 test_preds/
 val_preds/
+test_preds.zip
+val_preds.zip
 test_preds_before_2025_06_16/
 val_preds_before_2025_06_16/
 splits_averaged_before_2025_06_16/
