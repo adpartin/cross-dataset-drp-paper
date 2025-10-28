@@ -1,0 +1,28 @@
+models:
+  - name: DeepCDR
+    repo: https://github.com/JDACS4C-IMPROVE/DeepCDR
+    tag: v0.1.0
+  - name: DeepTTC
+    repo: https://github.com/JDACS4C-IMPROVE/DeepTTC
+    tag: v0.1.0
+  - name: GraphDRP
+    repo: https://github.com/JDACS4C-IMPROVE/GraphDRP
+    tag: v0.1.0
+  - name: HiDRA
+    repo: https://github.com/JDACS4C-IMPROVE/HiDRA
+    tag: v0.1.0
+  - name: LGBM
+    repo: https://github.com/JDACS4C-IMPROVE/LGBM
+    tag: v0.1.0
+  - name: tCNNS
+    repo: https://github.com/JDACS4C-IMPROVE/tCNNS-Project
+    tag: v0.1.0
+  - name: UNO
+    repo: https://github.com/JDACS4C-IMPROVE/UNO
+    tag: v0.1.0
+
+improve:
+  repo: https://github.com/JDACS4C-IMPROVE/IMPROVE
+  tag: v0.1.0
+  csa_workflow_doc: https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.1.0/workflows/csa/parsl
+
