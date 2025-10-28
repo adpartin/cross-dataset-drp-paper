@@ -17,3 +17,8 @@ test_preds_before_2025_06_16/
 val_preds_before_2025_06_16/
 splits_averaged_before_2025_06_16/
 results_for_paper/*.tiff
+results_for_paper/*.eps
+results_for_paper_revision/*.tiff
+results_for_paper_revision/*.eps
+results_for_paper_revision_2/*.tiff
+results_for_paper_revision_2/*.eps
