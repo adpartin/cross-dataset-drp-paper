@@ -1,4 +1,4 @@
-name: drp-benchmark
+name: csa-paper-2025
 channels:
   - defaults
   - conda-forge
