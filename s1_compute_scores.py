@@ -2,7 +2,7 @@
 Step 1: Compute Performance Scores from Predictions
 ====================================================
 
-This stage computes performance scores (R², MSE, etc.) from raw prediction CSV files
+This step computes performance scores (R², MSE, etc.) from raw prediction CSV files
 by averaging scores across data splits for each model, source dataset, and target dataset.
 
 PURPOSE:
@@ -20,10 +20,10 @@ INPUT:
 
 OUTPUT:
 -------
-- Creates scores/ directory with score CSV files
+- Creates s1_scores/ directory with score CSV files
 - Per-model scores: <MODEL>_scores.csv
 - Combined scores: all_models_scores.csv
-- All scores saved to outputs/scores/
+- All scores saved to outputs/s1_scores/
 
 USAGE:
 ------
@@ -49,7 +49,7 @@ def main():
     start_time = time.time()
 
     parser = argparse.ArgumentParser(
-        description='Stage 1: Compute performance scores from prediction CSV files.',
+        description='Step 1: Compute performance scores from prediction CSV files.',
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
@@ -61,7 +61,7 @@ def main():
     args = parser.parse_args()
  
     # Create output directory structure
-    outdir = Path(args.outdir) / 'scores'
+    outdir = Path(args.outdir) / 's1_scores'
     outdir.mkdir(parents=True, exist_ok=True)
     
     # Create logs directory before setting up logging
@@ -72,7 +72,7 @@ def main():
     setup_logging(log_file=str(logs_dir / 's1_compute_scores.log'))
 
     logging.info("=" * 50)
-    logging.info("Stage 1: Compute Performance Scores from Predictions")
+    logging.info("Step 1: Compute Performance Scores from Predictions")
     logging.info("=" * 50)
     logging.info(f"Input: test_preds/ directory")
     logging.info(f"Output: {outdir}")
@@ -88,7 +88,6 @@ def main():
     logging.info(f"Found {len(pred_files)} prediction CSV files in test_preds/")
     
     # Compute scores from averaged splits
-    logging.info("Computing scores from averaged splits...")
     compute_scores_from_averaged_splits(
         outdir=outdir,
         models=None,
@@ -98,7 +97,7 @@ def main():
 
     runtime = (time.time() - start_time) / 60
     logging.info(f"Runtime: {runtime:.2f} minutes")
-    logging.info(f"Stage 1 complete. Scores saved to {outdir}")
+    logging.info(f"Step 1 complete. Scores saved to {outdir}")
     
     print(f'\n✅ Finished {Path(__file__).name}!')
 
