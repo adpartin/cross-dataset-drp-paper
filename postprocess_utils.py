@@ -1,8 +1,8 @@
 """
 Utility functions for generating data required by postprocess_plot.ipynb:
 - all_models_scores.csv
-- {model}_{metric}_mean_csa_table.csv
-- {model}_{metric}_std_csa_table.csv
+- {model}_{metric}_G_mean.csv
+- {model}_{metric}_G_std.csv
 """
 
 import logging
@@ -376,7 +376,7 @@ def compute_csa_tables_from_averaged_splits(
         all_models_scores = pd.read_csv(input_dir / 'all_models_scores.csv')
         models = sorted(all_models_scores['model'].unique().tolist())
 
-    logging.info('Computing CSA tables.')
+    logging.info("Computing G matrices from averaged splits.")
     logging.info(f'Models: {models}')
 
     # for model_name in models:
@@ -400,8 +400,10 @@ def compute_csa_tables_from_averaged_splits(
             
             # Save tables
             file_suffix = f"_{filtering}" if filtering else ""
-            mean.to_csv(outdir / f"{model_name}_{met}_mean_csa_table{file_suffix}.csv")
-            std.to_csv(outdir / f"{model_name}_{met}_std_csa_table{file_suffix}.csv")
+            # mean.to_csv(outdir / f"{model_name}_{met}_mean_csa_table{file_suffix}.csv")
+            # std.to_csv(outdir / f"{model_name}_{met}_std_csa_table{file_suffix}.csv")
+            mean.to_csv(outdir / f"{model_name}_{met}_G_mean{file_suffix}.csv")
+            std.to_csv(outdir / f"{model_name}_{met}_G_std{file_suffix}.csv")
 
 
 def apply_decimal_to_dataframe(

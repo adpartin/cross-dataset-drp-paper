@@ -98,7 +98,6 @@ def main():
     logging.info(f"Found input scores in {input_dir}")
     
     # Generate CSA tables (G matrices)
-    logging.info("Computing G matrices from averaged splits...")
     compute_csa_tables_from_averaged_splits(
         input_dir=input_dir,
         outdir=outdir
