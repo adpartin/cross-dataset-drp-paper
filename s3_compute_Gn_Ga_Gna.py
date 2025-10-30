@@ -10,11 +10,11 @@ This step consumes outputs from Step 1 and Step 2 to compute:
 It also exports aggregated Ga/Gna tables across models for convenient plotting.
 
 Inputs:
-- ./outputs/G_matrices/: per-model per-metric mean/std CSA tables from Step 2
-- ./outputs/scores/all_models_scores.csv: optional, for within-study summaries (not required)
+- ./outputs/s2_G_matrices/: per-model per-metric mean/std CSA tables from Step 2
+- ./outputs/s1_scores/all_models_scores.csv: optional, for within-study summaries (not required)
 
 Outputs:
-- ./outputs/Ga_Gn_Gna_matrices/
+- ./outputs/s3_GaGnGna/
   - <model>_<metric>_Gn_csa_table.csv
   - <model>_<metric>_Ga.csv (row vector over sources)
   - <model>_<metric>_Gna.csv (row vector over sources)
@@ -147,13 +147,13 @@ def main():
     parser.add_argument(
         "--scores_dir",
         type=str,
-        default="./outputs/scores", 
+        default="./outputs/s1_scores", 
         help="Scores directory from Step 1."
     )
     parser.add_argument(
         "--G_dir", 
         type=str, 
-        default="./outputs/G_matrices", 
+        default="./outputs/s2_G_matrices", 
         help="G matrices directory from Step 2."
     )
     parser.add_argument(
@@ -165,8 +165,8 @@ def main():
     parser.add_argument(
         "--out_subdir",
         type=str,
-        default="Gn_Ga_Gna_matrices",
-        help="Subdirectory under outdir for Stage 3 outputs (default: Gn_Ga_Gna_matrices)."
+        default="s3_GaGnGna",
+        help="Subdirectory under outdir for Step 3 outputs (default: s3_GaGnGna)."
     )
     parser.add_argument(
         "--metrics",
