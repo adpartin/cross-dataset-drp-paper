@@ -7,18 +7,163 @@ Utility functions for generating data required by postprocess_plot.ipynb:
 
 import logging
 import os
+import sys
 from pathlib import Path
 from tqdm import tqdm
-from typing import List, Optional, Union
+from typing import List, Optional, Dict, Any
 
+import numpy as np
 import pandas as pd
+import sklearn
+from math import sqrt
+from scipy.stats import pearsonr, spearmanr
 
-from improvelib.metrics import compute_metrics
+# Import sklearn metrics functions
+# Handle different sklearn versions for root_mean_squared_error
+try:
+    from sklearn.metrics import (
+        r2_score, mean_squared_error, root_mean_squared_error,
+        accuracy_score, balanced_accuracy_score, f1_score,
+        precision_score, recall_score, roc_auc_score, average_precision_score
+    )
+    HAS_RMSE_FUNC = True
+except ImportError:
+    # Fallback for older sklearn versions
+    from sklearn.metrics import (
+        r2_score, mean_squared_error,
+        accuracy_score, balanced_accuracy_score, f1_score,
+        precision_score, recall_score, roc_auc_score, average_precision_score
+    )
+    HAS_RMSE_FUNC = False
 
 # Column names used throughout the analysis
 CANC_COL_NAME = 'improve_sample_id'
 DRUG_COL_NAME = 'improve_chem_id'
 Y_COL_NAME = 'auc'
+
+
+# ------------------------------------------------------------
+# From improvelib.metrics import compute_metrics
+# ------------------------------------------------------------
+def mse(y_true, y_pred):
+    return mean_squared_error(y_true, y_pred)
+
+
+def rmse(y_true, y_pred):
+    if HAS_RMSE_FUNC:
+        return root_mean_squared_error(y_true, y_pred)
+    else:
+        # For older sklearn versions, compute manually
+        try:
+            # Try squared=False parameter (available in sklearn >= 0.22.0)
+            return mean_squared_error(y_true, y_pred, squared=False)
+        except TypeError:
+            # Fallback for very old sklearn versions
+            return sqrt(mean_squared_error(y_true, y_pred))
+
+
+def pearson(y_true, y_pred):
+    return pearsonr(y_true, y_pred)[0]
+
+
+def spearman(y_true, y_pred):
+    return spearmanr(y_true, y_pred)[0]
+
+
+def r_square(y_true, y_pred):
+    return r2_score(y_true, y_pred)
+
+
+def acc(y_true, y_pred):
+    return accuracy_score(y_true, y_pred)
+
+
+def bacc(y_true, y_pred):
+    return balanced_accuracy_score(y_true, y_pred)
+
+
+def f1(y_true, y_pred):
+    return f1_score(y_true, y_pred)
+
+
+def precision(y_true, y_pred):
+    return precision_score(y_true, y_pred)
+
+
+def recall(y_true, y_pred):
+    return recall_score(y_true, y_pred)
+
+
+def roc_auc(y_true, y_pred):
+    return roc_auc_score(y_true, y_pred)
+
+
+def aupr(y_true, y_pred):
+    return average_precision_score(y_true, y_pred)
+
+
+def kappa(y_true, y_pred):
+    from sklearn.metrics import cohen_kappa_score
+    return cohen_kappa_score(y_true, y_pred)
+
+
+def str2Class(str) -> Any:
+    """Convert a string to a class reference.
+
+    Args:
+        class_name (str): The name of the class to retrieve.
+
+    Returns:
+        Any: The class reference corresponding to the class name.
+    """
+    return getattr(sys.modules[__name__], str)
+
+
+def compute_metrics(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    metric_type: str,
+    y_prob = None
+    ) -> Dict[str, float]:
+    """Compute the specified set of metrics.
+
+    Args:
+        y_true (np.ndarray): True values to predict.
+        y_pred (np.ndarray): Predictions made by the model.
+        metric_type (str): Type of metrics to compute ('classification' or 'regression').
+        y_prob (np.ndaprray): Target scores made by the classification model. Optional, defaults to None.
+
+    Returns:
+        dict: A dictionary of evaluated metrics.
+    """
+    scores = {}
+
+    if metric_type == "classification":
+        metrics = ["acc", "recall", "precision", "f1", "kappa", "bacc"]
+    elif metric_type == "regression":
+        metrics = ["mse", "rmse", "pcc", "scc", "r2"]
+    else:
+        raise ValueError(f"Invalid metric_type provided: {metric_type}. \
+                         Choose 'classification' or 'regression'.")
+
+    for mtstr in metrics:
+        mapstr = mtstr
+        if mapstr == "pcc":
+            mapstr = "pearson"
+        elif mapstr == "scc":
+            mapstr = "spearman"
+        elif mapstr == "r2":
+            mapstr = "r_square"
+        scores[mtstr] = str2Class(mapstr)(y_true, y_pred)
+
+    if metric_type == "classification":
+        if y_prob is not None:
+            scores["roc_auc"] = roc_auc(y_true, y_prob)
+            scores["aupr"] = aupr(y_true, y_prob)
+
+    scores = {k: float(v) for k, v in scores.items()}
+    return scores
+# ------------------------------------------------------------
 
 
 def setup_logging(log_file: str = 'paper_data_generation.log') -> None:
@@ -118,7 +263,7 @@ def compute_scores_from_averaged_splits(
     sources: Optional[List[str]]=None,
     targets: Optional[List[str]]=None,
     filtering: Optional[str]=None
-) -> pd.DataFrame:
+    ) -> pd.DataFrame:
     """Compute scores from averaged splits for each model.
     
     Args:
@@ -213,7 +358,7 @@ def compute_csa_tables_from_averaged_splits(
     sources: Optional[List[str]]=None,
     targets: Optional[List[str]]=None,
     filtering: Optional[str]=None
-) -> None:
+    ) -> None:
     """Generate cross-study analysis (CSA) tables from averaged splits.
     
     Args:
