@@ -1,5 +1,5 @@
 """
-Stage 0: Aggregate Raw Predictions from CSA Workflow Outputs
+Step 0: Aggregate Raw Predictions from CSA Workflow Outputs
 ================================================================
 
 This stage collects raw prediction data from the complete CSA workflow model runs
