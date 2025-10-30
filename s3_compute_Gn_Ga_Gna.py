@@ -93,7 +93,7 @@ def compute_and_save_per_model_outputs(
     gna_rows: Dict[str, pd.Series] = {}
 
     for model in models:
-        logging.info(f"Computing Ga/Gn/Gna for model={model}, metric={metric}")
+        logging.info(f"Computing Gn/Ga/Gna for model={model}, metric={metric}")
         G_mean = load_G_mean_std(G_dir, model, metric)
 
         # Ensure index/columns are in canonical order
@@ -165,8 +165,8 @@ def main():
     parser.add_argument(
         "--out_subdir",
         type=str,
-        default="Ga_Gn_Gna_matrices",
-        help="Subdirectory under outdir for Stage 3 outputs (default: Ga_Gn_Gna_matrices)."
+        default="Gn_Ga_Gna_matrices",
+        help="Subdirectory under outdir for Stage 3 outputs (default: Gn_Ga_Gna_matrices)."
     )
     parser.add_argument(
         "--metrics",
@@ -275,8 +275,8 @@ def main():
                 df_std.loc["Mean across datasets", "Mean across models"] = pd.NA
 
                 # Round to 2 decimal places as requested
-                df_mean = df_mean.round(2)
-                df_std = df_std.round(2)
+                df_mean = df_mean.round(3)
+                df_std = df_std.round(3)
 
                 within_study_dir = csa_out / "within_study"
                 within_study_dir.mkdir(parents=True, exist_ok=True)
