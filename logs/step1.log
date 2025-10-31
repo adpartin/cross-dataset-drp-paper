@@ -1,0 +1,526 @@
+2025-10-31 12:39:24,175 - INFO - ==================================================
+2025-10-31 12:39:24,175 - INFO - Step 1: Compute Performance Scores from Predictions
+2025-10-31 12:39:24,176 - INFO - ==================================================
+2025-10-31 12:39:24,176 - INFO - Input: test_preds/ directory
+2025-10-31 12:39:24,176 - INFO - Output: outputs/s1_scores
+2025-10-31 12:39:24,180 - INFO - Found 1750 prediction CSV files in test_preds/
+2025-10-31 12:39:24,196 - INFO - Computing scores from averaged splits.
+2025-10-31 12:39:24,196 - INFO - Models: ['deepcdr', 'deepttc', 'graphdrp', 'hidra', 'lgbm', 'tcnns', 'uno']
+2025-10-31 12:39:24,197 - INFO - Sources: ['CCLE', 'CTRPv2', 'GDSCv1', 'GDSCv2', 'gCSI']
+2025-10-31 12:39:24,197 - INFO - Targets: ['CCLE', 'CTRPv2', 'GDSCv1', 'GDSCv2', 'gCSI']
+Processing models:   0%|          | 0/7 [00:00<?, ?it/s]
+Processing sources for deepcdr:   0%|          | 0/5 [00:00<?, ?it/s][A
+
+Processing targets for CCLE:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for CCLE:  40%|████      | 2/5 [00:03<00:04,  1.63s/it][A[A
+
+Processing targets for CCLE:  60%|██████    | 3/5 [00:05<00:03,  1.81s/it][A[A
+
+Processing targets for CCLE:  80%|████████  | 4/5 [00:07<00:01,  1.77s/it][A[A
+
+Processing targets for CCLE: 100%|██████████| 5/5 [00:07<00:00,  1.20s/it][A[A
+
+                                                                          [A[A
+Processing sources for deepcdr:  20%|██        | 1/5 [00:07<00:28,  7.16s/it][A
+
+Processing targets for CTRPv2:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for CTRPv2:  20%|██        | 1/5 [00:00<00:00,  8.09it/s][A[A
+
+Processing targets for CTRPv2:  40%|████      | 2/5 [00:00<00:01,  2.45it/s][A[A
+
+Processing targets for CTRPv2:  60%|██████    | 3/5 [00:02<00:02,  1.18s/it][A[A
+
+Processing targets for CTRPv2:  80%|████████  | 4/5 [00:04<00:01,  1.36s/it][A[A
+
+Processing targets for CTRPv2: 100%|██████████| 5/5 [00:04<00:00,  1.09it/s][A[A
+
+                                                                            [A[A
+Processing sources for deepcdr:  40%|████      | 2/5 [00:11<00:16,  5.65s/it][A
+
+Processing targets for GDSCv1:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for GDSCv1:  20%|██        | 1/5 [00:00<00:00,  8.00it/s][A[A
+
+Processing targets for GDSCv1:  40%|████      | 2/5 [00:03<00:05,  1.90s/it][A[A
+
+Processing targets for GDSCv1:  60%|██████    | 3/5 [00:03<00:02,  1.20s/it][A[A
+
+Processing targets for GDSCv1:  80%|████████  | 4/5 [00:05<00:01,  1.40s/it][A[A
+
+Processing targets for GDSCv1: 100%|██████████| 5/5 [00:05<00:00,  1.04it/s][A[A
+
+                                                                            [A[A
+Processing sources for deepcdr:  60%|██████    | 3/5 [00:17<00:11,  5.59s/it][A
+
+Processing targets for GDSCv2:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for GDSCv2:  20%|██        | 1/5 [00:00<00:00,  7.97it/s][A[A
+
+Processing targets for GDSCv2:  40%|████      | 2/5 [00:03<00:05,  1.95s/it][A[A
+
+Processing targets for GDSCv2:  60%|██████    | 3/5 [00:05<00:04,  2.04s/it][A[A
+
+Processing targets for GDSCv2:  80%|████████  | 4/5 [00:05<00:01,  1.34s/it][A[A
+
+Processing targets for GDSCv2: 100%|██████████| 5/5 [00:05<00:00,  1.11it/s][A[A
+
+                                                                            [A[A
+Processing sources for deepcdr:  80%|████████  | 4/5 [00:23<00:05,  5.71s/it][A
+
+Processing targets for gCSI:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for gCSI:  20%|██        | 1/5 [00:00<00:00,  8.33it/s][A[A
+
+Processing targets for gCSI:  40%|████      | 2/5 [00:03<00:05,  1.94s/it][A[A
+
+Processing targets for gCSI:  60%|██████    | 3/5 [00:05<00:04,  2.08s/it][A[A
+
+Processing targets for gCSI:  80%|████████  | 4/5 [00:07<00:01,  1.88s/it][A[A
+
+                                                                          [A[A
+Processing sources for deepcdr: 100%|██████████| 5/5 [00:30<00:00,  6.26s/it][A
+                                                                             [AProcessing models:  14%|█▍        | 1/7 [00:30<03:02, 30.42s/it]
+Processing sources for deepttc:   0%|          | 0/5 [00:00<?, ?it/s][A
+
+Processing targets for CCLE:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for CCLE:  40%|████      | 2/5 [00:03<00:04,  1.55s/it][A[A
+
+Processing targets for CCLE:  60%|██████    | 3/5 [00:05<00:03,  1.78s/it][A[A
+
+Processing targets for CCLE:  80%|████████  | 4/5 [00:06<00:01,  1.74s/it][A[A
+
+Processing targets for CCLE: 100%|██████████| 5/5 [00:06<00:00,  1.18s/it][A[A
+
+                                                                          [A[A
+Processing sources for deepttc:  20%|██        | 1/5 [00:06<00:27,  7.00s/it][A
+
+Processing targets for CTRPv2:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for CTRPv2:  20%|██        | 1/5 [00:00<00:00,  8.17it/s][A[A
+
+Processing targets for CTRPv2:  40%|████      | 2/5 [00:00<00:01,  2.56it/s][A[A
+
+Processing targets for CTRPv2:  60%|██████    | 3/5 [00:02<00:02,  1.21s/it][A[A
+
+Processing targets for CTRPv2:  80%|████████  | 4/5 [00:04<00:01,  1.43s/it][A[A
+
+Processing targets for CTRPv2: 100%|██████████| 5/5 [00:04<00:00,  1.04it/s][A[A
+
+                                                                            [A[A
+Processing sources for deepttc:  40%|████      | 2/5 [00:11<00:17,  5.70s/it][A
+
+Processing targets for GDSCv1:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for GDSCv1:  20%|██        | 1/5 [00:00<00:00,  7.86it/s][A[A
+
+Processing targets for GDSCv1:  40%|████      | 2/5 [00:03<00:05,  1.99s/it][A[A
+
+Processing targets for GDSCv1:  60%|██████    | 3/5 [00:03<00:02,  1.30s/it][A[A
+
+Processing targets for GDSCv1:  80%|████████  | 4/5 [00:05<00:01,  1.51s/it][A[A
+
+Processing targets for GDSCv1: 100%|██████████| 5/5 [00:05<00:00,  1.01s/it][A[A
+
+                                                                            [A[A
+Processing sources for deepttc:  60%|██████    | 3/5 [00:17<00:11,  5.77s/it][A
+
+Processing targets for GDSCv2:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for GDSCv2:  20%|██        | 1/5 [00:00<00:00,  8.18it/s][A[A
+
+Processing targets for GDSCv2:  40%|████      | 2/5 [00:03<00:05,  1.91s/it][A[A
+
+Processing targets for GDSCv2:  60%|██████    | 3/5 [00:05<00:03,  1.98s/it][A[A
+
+Processing targets for GDSCv2:  80%|████████  | 4/5 [00:05<00:01,  1.32s/it][A[A
+
+Processing targets for GDSCv2: 100%|██████████| 5/5 [00:05<00:00,  1.12it/s][A[A
+
+                                                                            [A[A
+Processing sources for deepttc:  80%|████████  | 4/5 [00:23<00:05,  5.78s/it][A
+
+Processing targets for gCSI:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for gCSI:  20%|██        | 1/5 [00:00<00:00,  7.79it/s][A[A
+
+Processing targets for gCSI:  40%|████      | 2/5 [00:03<00:05,  1.91s/it][A[A
+
+Processing targets for gCSI:  60%|██████    | 3/5 [00:05<00:03,  1.97s/it][A[A
+
+Processing targets for gCSI:  80%|████████  | 4/5 [00:06<00:01,  1.84s/it][A[A
+
+                                                                          [A[A
+Processing sources for deepttc: 100%|██████████| 5/5 [00:30<00:00,  6.24s/it][A
+                                                                             [AProcessing models:  29%|██▊       | 2/7 [01:00<02:32, 30.47s/it]
+Processing sources for graphdrp:   0%|          | 0/5 [00:00<?, ?it/s][A
+
+Processing targets for CCLE:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for CCLE:  40%|████      | 2/5 [00:03<00:04,  1.58s/it][A[A
+
+Processing targets for CCLE:  60%|██████    | 3/5 [00:05<00:03,  1.80s/it][A[A
+
+Processing targets for CCLE:  80%|████████  | 4/5 [00:06<00:01,  1.76s/it][A[A
+
+Processing targets for CCLE: 100%|██████████| 5/5 [00:07<00:00,  1.20s/it][A[A
+
+                                                                          [A[A
+Processing sources for graphdrp:  20%|██        | 1/5 [00:07<00:28,  7.11s/it][A
+
+Processing targets for CTRPv2:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for CTRPv2:  20%|██        | 1/5 [00:00<00:00,  7.72it/s][A[A
+
+Processing targets for CTRPv2:  40%|████      | 2/5 [00:00<00:01,  2.46it/s][A[A
+
+Processing targets for CTRPv2:  60%|██████    | 3/5 [00:02<00:02,  1.23s/it][A[A
+
+Processing targets for CTRPv2:  80%|████████  | 4/5 [00:04<00:01,  1.38s/it][A[A
+
+Processing targets for CTRPv2: 100%|██████████| 5/5 [00:04<00:00,  1.08it/s][A[A
+
+                                                                            [A[A
+Processing sources for graphdrp:  40%|████      | 2/5 [00:11<00:17,  5.67s/it][A
+
+Processing targets for GDSCv1:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for GDSCv1:  20%|██        | 1/5 [00:00<00:00,  7.89it/s][A[A
+
+Processing targets for GDSCv1:  40%|████      | 2/5 [00:03<00:05,  1.90s/it][A[A
+
+Processing targets for GDSCv1:  60%|██████    | 3/5 [00:03<00:02,  1.26s/it][A[A
+
+Processing targets for GDSCv1:  80%|████████  | 4/5 [00:05<00:01,  1.49s/it][A[A
+
+Processing targets for GDSCv1: 100%|██████████| 5/5 [00:05<00:00,  1.00it/s][A[A
+
+                                                                            [A[A
+Processing sources for graphdrp:  60%|██████    | 3/5 [00:17<00:11,  5.70s/it][A
+
+Processing targets for GDSCv2:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for GDSCv2:  20%|██        | 1/5 [00:00<00:00,  8.11it/s][A[A
+
+Processing targets for GDSCv2:  40%|████      | 2/5 [00:03<00:05,  1.91s/it][A[A
+
+Processing targets for GDSCv2:  60%|██████    | 3/5 [00:05<00:03,  1.99s/it][A[A
+
+Processing targets for GDSCv2:  80%|████████  | 4/5 [00:05<00:01,  1.44s/it][A[A
+
+Processing targets for GDSCv2: 100%|██████████| 5/5 [00:06<00:00,  1.03it/s][A[A
+
+                                                                            [A[A
+Processing sources for graphdrp:  80%|████████  | 4/5 [00:23<00:05,  5.86s/it][A
+
+Processing targets for gCSI:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for gCSI:  20%|██        | 1/5 [00:00<00:00,  7.59it/s][A[A
+
+Processing targets for gCSI:  40%|████      | 2/5 [00:03<00:05,  1.93s/it][A[A
+
+Processing targets for gCSI:  60%|██████    | 3/5 [00:05<00:04,  2.01s/it][A[A
+
+Processing targets for gCSI:  80%|████████  | 4/5 [00:07<00:01,  1.93s/it][A[A
+
+                                                                          [A[A
+Processing sources for graphdrp: 100%|██████████| 5/5 [00:30<00:00,  6.39s/it][A
+                                                                              [AProcessing models:  43%|████▎     | 3/7 [01:31<02:02, 30.69s/it]
+Processing sources for hidra:   0%|          | 0/5 [00:00<?, ?it/s][A
+
+Processing targets for CCLE:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for CCLE:  40%|████      | 2/5 [00:03<00:04,  1.53s/it][A[A
+
+Processing targets for CCLE:  60%|██████    | 3/5 [00:05<00:03,  1.80s/it][A[A
+
+Processing targets for CCLE:  80%|████████  | 4/5 [00:06<00:01,  1.74s/it][A[A
+
+Processing targets for CCLE: 100%|██████████| 5/5 [00:06<00:00,  1.17s/it][A[A
+
+                                                                          [A[A
+Processing sources for hidra:  20%|██        | 1/5 [00:06<00:27,  6.99s/it][A
+
+Processing targets for CTRPv2:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for CTRPv2:  20%|██        | 1/5 [00:00<00:00,  8.15it/s][A[A
+
+Processing targets for CTRPv2:  40%|████      | 2/5 [00:00<00:01,  2.38it/s][A[A
+
+Processing targets for CTRPv2:  60%|██████    | 3/5 [00:02<00:02,  1.21s/it][A[A
+
+Processing targets for CTRPv2:  80%|████████  | 4/5 [00:04<00:01,  1.41s/it][A[A
+
+Processing targets for CTRPv2: 100%|██████████| 5/5 [00:04<00:00,  1.05it/s][A[A
+
+                                                                            [A[A
+Processing sources for hidra:  40%|████      | 2/5 [00:11<00:17,  5.68s/it][A
+
+Processing targets for GDSCv1:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for GDSCv1:  20%|██        | 1/5 [00:00<00:00,  7.88it/s][A[A
+
+Processing targets for GDSCv1:  40%|████      | 2/5 [00:03<00:05,  1.92s/it][A[A
+
+Processing targets for GDSCv1:  60%|██████    | 3/5 [00:03<00:02,  1.26s/it][A[A
+
+Processing targets for GDSCv1:  80%|████████  | 4/5 [00:05<00:01,  1.43s/it][A[A
+
+Processing targets for GDSCv1: 100%|██████████| 5/5 [00:05<00:00,  1.04it/s][A[A
+
+                                                                            [A[A
+Processing sources for hidra:  60%|██████    | 3/5 [00:17<00:11,  5.65s/it][A
+
+Processing targets for GDSCv2:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for GDSCv2:  20%|██        | 1/5 [00:00<00:00,  8.21it/s][A[A
+
+Processing targets for GDSCv2:  40%|████      | 2/5 [00:03<00:05,  1.90s/it][A[A
+
+Processing targets for GDSCv2:  60%|██████    | 3/5 [00:05<00:03,  1.96s/it][A[A
+
+Processing targets for GDSCv2:  80%|████████  | 4/5 [00:05<00:01,  1.29s/it][A[A
+
+Processing targets for GDSCv2: 100%|██████████| 5/5 [00:05<00:00,  1.15it/s][A[A
+
+                                                                            [A[A
+Processing sources for hidra:  80%|████████  | 4/5 [00:23<00:05,  5.66s/it][A
+
+Processing targets for gCSI:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for gCSI:  20%|██        | 1/5 [00:00<00:00,  8.15it/s][A[A
+
+Processing targets for gCSI:  40%|████      | 2/5 [00:03<00:05,  1.94s/it][A[A
+
+Processing targets for gCSI:  60%|██████    | 3/5 [00:05<00:03,  2.00s/it][A[A
+
+Processing targets for gCSI:  80%|████████  | 4/5 [00:07<00:01,  1.91s/it][A[A
+
+                                                                          [A[A
+Processing sources for hidra: 100%|██████████| 5/5 [00:30<00:00,  6.24s/it][A
+                                                                           [AProcessing models:  57%|█████▋    | 4/7 [02:02<01:31, 30.55s/it]
+Processing sources for lgbm:   0%|          | 0/5 [00:00<?, ?it/s][A
+
+Processing targets for CCLE:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for CCLE:  40%|████      | 2/5 [00:03<00:04,  1.59s/it][A[A
+
+Processing targets for CCLE:  60%|██████    | 3/5 [00:05<00:03,  1.85s/it][A[A
+
+Processing targets for CCLE:  80%|████████  | 4/5 [00:06<00:01,  1.75s/it][A[A
+
+Processing targets for CCLE: 100%|██████████| 5/5 [00:07<00:00,  1.18s/it][A[A
+
+                                                                          [A[A
+Processing sources for lgbm:  20%|██        | 1/5 [00:07<00:28,  7.10s/it][A
+
+Processing targets for CTRPv2:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for CTRPv2:  20%|██        | 1/5 [00:00<00:00,  8.12it/s][A[A
+
+Processing targets for CTRPv2:  40%|████      | 2/5 [00:00<00:01,  2.33it/s][A[A
+
+Processing targets for CTRPv2:  60%|██████    | 3/5 [00:02<00:02,  1.23s/it][A[A
+
+Processing targets for CTRPv2:  80%|████████  | 4/5 [00:04<00:01,  1.38s/it][A[A
+
+Processing targets for CTRPv2: 100%|██████████| 5/5 [00:04<00:00,  1.08it/s][A[A
+
+                                                                            [A[A
+Processing sources for lgbm:  40%|████      | 2/5 [00:11<00:17,  5.67s/it][A
+
+Processing targets for GDSCv1:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for GDSCv1:  20%|██        | 1/5 [00:00<00:00,  8.21it/s][A[A
+
+Processing targets for GDSCv1:  40%|████      | 2/5 [00:03<00:05,  1.91s/it][A[A
+
+Processing targets for GDSCv1:  60%|██████    | 3/5 [00:03<00:02,  1.22s/it][A[A
+
+Processing targets for GDSCv1:  80%|████████  | 4/5 [00:05<00:01,  1.42s/it][A[A
+
+Processing targets for GDSCv1: 100%|██████████| 5/5 [00:05<00:00,  1.04it/s][A[A
+
+                                                                            [A[A
+Processing sources for lgbm:  60%|██████    | 3/5 [00:17<00:11,  5.61s/it][A
+
+Processing targets for GDSCv2:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for GDSCv2:  20%|██        | 1/5 [00:00<00:00,  8.18it/s][A[A
+
+Processing targets for GDSCv2:  40%|████      | 2/5 [00:03<00:05,  1.89s/it][A[A
+
+Processing targets for GDSCv2:  60%|██████    | 3/5 [00:05<00:03,  1.99s/it][A[A
+
+Processing targets for GDSCv2:  80%|████████  | 4/5 [00:05<00:01,  1.35s/it][A[A
+
+Processing targets for GDSCv2: 100%|██████████| 5/5 [00:05<00:00,  1.09it/s][A[A
+
+                                                                            [A[A
+Processing sources for lgbm:  80%|████████  | 4/5 [00:23<00:05,  5.72s/it][A
+
+Processing targets for gCSI:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for gCSI:  20%|██        | 1/5 [00:00<00:00,  7.56it/s][A[A
+
+Processing targets for gCSI:  40%|████      | 2/5 [00:03<00:05,  1.93s/it][A[A
+
+Processing targets for gCSI:  60%|██████    | 3/5 [00:05<00:04,  2.02s/it][A[A
+
+Processing targets for gCSI:  80%|████████  | 4/5 [00:07<00:01,  1.89s/it][A[A
+
+                                                                          [A[A
+Processing sources for lgbm: 100%|██████████| 5/5 [00:30<00:00,  6.26s/it][A
+                                                                          [AProcessing models:  71%|███████▏  | 5/7 [02:32<01:01, 30.50s/it]
+Processing sources for tcnns:   0%|          | 0/5 [00:00<?, ?it/s][A
+
+Processing targets for CCLE:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for CCLE:  40%|████      | 2/5 [00:03<00:04,  1.55s/it][A[A
+
+Processing targets for CCLE:  60%|██████    | 3/5 [00:05<00:03,  1.79s/it][A[A
+
+Processing targets for CCLE:  80%|████████  | 4/5 [00:06<00:01,  1.78s/it][A[A
+
+Processing targets for CCLE: 100%|██████████| 5/5 [00:07<00:00,  1.20s/it][A[A
+
+                                                                          [A[A
+Processing sources for tcnns:  20%|██        | 1/5 [00:07<00:28,  7.12s/it][A
+
+Processing targets for CTRPv2:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for CTRPv2:  20%|██        | 1/5 [00:00<00:00,  8.18it/s][A[A
+
+Processing targets for CTRPv2:  40%|████      | 2/5 [00:00<00:01,  1.86it/s][A[A
+
+Processing targets for CTRPv2:  60%|██████    | 3/5 [00:03<00:02,  1.29s/it][A[A
+
+Processing targets for CTRPv2:  80%|████████  | 4/5 [00:04<00:01,  1.42s/it][A[A
+
+Processing targets for CTRPv2: 100%|██████████| 5/5 [00:04<00:00,  1.05it/s][A[A
+
+                                                                            [A[A
+Processing sources for tcnns:  40%|████      | 2/5 [00:11<00:17,  5.80s/it][A
+
+Processing targets for GDSCv1:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for GDSCv1:  20%|██        | 1/5 [00:00<00:00,  8.08it/s][A[A
+
+Processing targets for GDSCv1:  40%|████      | 2/5 [00:03<00:05,  1.93s/it][A[A
+
+Processing targets for GDSCv1:  60%|██████    | 3/5 [00:03<00:02,  1.21s/it][A[A
+
+Processing targets for GDSCv1:  80%|████████  | 4/5 [00:05<00:01,  1.40s/it][A[A
+
+Processing targets for GDSCv1: 100%|██████████| 5/5 [00:05<00:00,  1.06it/s][A[A
+
+                                                                            [A[A
+Processing sources for tcnns:  60%|██████    | 3/5 [00:17<00:11,  5.66s/it][A
+
+Processing targets for GDSCv2:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for GDSCv2:  20%|██        | 1/5 [00:00<00:00,  8.10it/s][A[A
+
+Processing targets for GDSCv2:  40%|████      | 2/5 [00:03<00:05,  1.88s/it][A[A
+
+Processing targets for GDSCv2:  60%|██████    | 3/5 [00:05<00:03,  1.97s/it][A[A
+
+Processing targets for GDSCv2:  80%|████████  | 4/5 [00:05<00:01,  1.31s/it][A[A
+
+Processing targets for GDSCv2: 100%|██████████| 5/5 [00:05<00:00,  1.13it/s][A[A
+
+                                                                            [A[A
+Processing sources for tcnns:  80%|████████  | 4/5 [00:23<00:05,  5.69s/it][A
+
+Processing targets for gCSI:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for gCSI:  20%|██        | 1/5 [00:00<00:00,  6.55it/s][A[A
+
+Processing targets for gCSI:  40%|████      | 2/5 [00:03<00:05,  1.90s/it][A[A
+
+Processing targets for gCSI:  60%|██████    | 3/5 [00:05<00:04,  2.01s/it][A[A
+
+Processing targets for gCSI:  80%|████████  | 4/5 [00:07<00:01,  1.85s/it][A[A
+
+                                                                          [A[A
+Processing sources for tcnns: 100%|██████████| 5/5 [00:30<00:00,  6.20s/it][A
+                                                                           [AProcessing models:  86%|████████▌ | 6/7 [03:02<00:30, 30.45s/it]
+Processing sources for uno:   0%|          | 0/5 [00:00<?, ?it/s][A
+
+Processing targets for CCLE:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for CCLE:  40%|████      | 2/5 [00:03<00:04,  1.54s/it][A[A
+
+Processing targets for CCLE:  60%|██████    | 3/5 [00:05<00:03,  1.77s/it][A[A
+
+Processing targets for CCLE:  80%|████████  | 4/5 [00:06<00:01,  1.70s/it][A[A
+
+Processing targets for CCLE: 100%|██████████| 5/5 [00:06<00:00,  1.15s/it][A[A
+
+                                                                          [A[A
+Processing sources for uno:  20%|██        | 1/5 [00:06<00:27,  6.86s/it][A
+
+Processing targets for CTRPv2:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for CTRPv2:  20%|██        | 1/5 [00:00<00:00,  8.21it/s][A[A
+
+Processing targets for CTRPv2:  40%|████      | 2/5 [00:00<00:01,  2.86it/s][A[A
+
+Processing targets for CTRPv2:  60%|██████    | 3/5 [00:02<00:02,  1.16s/it][A[A
+
+Processing targets for CTRPv2:  80%|████████  | 4/5 [00:04<00:01,  1.33s/it][A[A
+
+Processing targets for CTRPv2: 100%|██████████| 5/5 [00:04<00:00,  1.12it/s][A[A
+
+                                                                            [A[A
+Processing sources for uno:  40%|████      | 2/5 [00:11<00:16,  5.45s/it][A
+
+Processing targets for GDSCv1:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for GDSCv1:  20%|██        | 1/5 [00:00<00:00,  8.30it/s][A[A
+
+Processing targets for GDSCv1:  40%|████      | 2/5 [00:03<00:05,  1.89s/it][A[A
+
+Processing targets for GDSCv1:  60%|██████    | 3/5 [00:03<00:02,  1.25s/it][A[A
+
+Processing targets for GDSCv1:  80%|████████  | 4/5 [00:05<00:01,  1.43s/it][A[A
+
+Processing targets for GDSCv1: 100%|██████████| 5/5 [00:05<00:00,  1.05it/s][A[A
+
+                                                                            [A[A
+Processing sources for uno:  60%|██████    | 3/5 [00:16<00:10,  5.49s/it][A
+
+Processing targets for GDSCv2:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for GDSCv2:  20%|██        | 1/5 [00:00<00:00,  8.43it/s][A[A
+
+Processing targets for GDSCv2:  40%|████      | 2/5 [00:03<00:05,  1.86s/it][A[A
+
+Processing targets for GDSCv2:  60%|██████    | 3/5 [00:05<00:03,  1.96s/it][A[A
+
+Processing targets for GDSCv2:  80%|████████  | 4/5 [00:05<00:01,  1.28s/it][A[A
+
+Processing targets for GDSCv2: 100%|██████████| 5/5 [00:05<00:00,  1.16it/s][A[A
+
+                                                                            [A[A
+Processing sources for uno:  80%|████████  | 4/5 [00:22<00:05,  5.55s/it][A
+
+Processing targets for gCSI:   0%|          | 0/5 [00:00<?, ?it/s][A[A
+
+Processing targets for gCSI:  20%|██        | 1/5 [00:00<00:00,  7.25it/s][A[A
+
+Processing targets for gCSI:  40%|████      | 2/5 [00:03<00:05,  1.93s/it][A[A
+
+Processing targets for gCSI:  60%|██████    | 3/5 [00:05<00:03,  1.98s/it][A[A
+
+Processing targets for gCSI:  80%|████████  | 4/5 [00:06<00:01,  1.81s/it][A[A
+
+                                                                          [A[A
+Processing sources for uno: 100%|██████████| 5/5 [00:29<00:00,  6.08s/it][A
+                                                                         [AProcessing models: 100%|██████████| 7/7 [03:32<00:00, 30.14s/it]Processing models: 100%|██████████| 7/7 [03:32<00:00, 30.35s/it]
+2025-10-31 12:42:56,711 - INFO - Runtime: 3.54 minutes
+2025-10-31 12:42:56,711 - INFO - Step 1 complete. Scores saved to outputs/s1_scores
+
+✅ Finished s1_compute_scores.py!

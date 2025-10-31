@@ -1,0 +1,33 @@
+2025-10-31 12:44:31,652 - INFO - ==================================================
+2025-10-31 12:44:31,652 - INFO - Step 6: Compute Drug and Cell Overlap Metrics
+2025-10-31 12:44:31,653 - INFO - ==================================================
+2025-10-31 12:44:31,653 - INFO - Model: UNO (uno)
+2025-10-31 12:44:31,653 - INFO - Metric: r2
+2025-10-31 12:44:31,653 - INFO - Input (predictions): test_preds
+2025-10-31 12:44:31,653 - INFO - Input (G matrices): outputs/s2_G_matrices
+2025-10-31 12:44:31,653 - INFO - Output: outputs/s6_overlap
+2025-10-31 12:44:31,654 - INFO - Found G matrix: outputs/s2_G_matrices/uno_r2_G_mean.csv
+2025-10-31 12:44:31,674 - INFO - [CCLE] using CTRPv2_CCLE_split_0_deepcdr.csv | unique drugs: 24
+2025-10-31 12:44:31,806 - INFO - [CTRPv2] using CCLE_CTRPv2_split_0_deepcdr.csv | unique drugs: 494
+2025-10-31 12:44:31,892 - INFO - [GDSCv1] using CCLE_GDSCv1_split_0_deepcdr.csv | unique drugs: 294
+2025-10-31 12:44:31,959 - INFO - [GDSCv2] using CCLE_GDSCv2_split_0_deepcdr.csv | unique drugs: 168
+2025-10-31 12:44:31,968 - INFO - [gCSI] using CCLE_gCSI_split_0_deepcdr.csv | unique drugs: 16
+2025-10-31 12:44:31,991 - INFO - [CCLE] using CTRPv2_CCLE_split_0_deepcdr.csv | unique cells: 411
+2025-10-31 12:44:32,116 - INFO - [CTRPv2] using CCLE_CTRPv2_split_0_deepcdr.csv | unique cells: 720
+2025-10-31 12:44:32,201 - INFO - [GDSCv1] using CCLE_GDSCv1_split_0_deepcdr.csv | unique cells: 546
+2025-10-31 12:44:32,260 - INFO - [GDSCv2] using CCLE_GDSCv2_split_0_deepcdr.csv | unique cells: 470
+2025-10-31 12:44:32,268 - INFO - [gCSI] using CCLE_gCSI_split_0_deepcdr.csv | unique cells: 312
+2025-10-31 12:44:34,304 - WARNING - The PostScript backend does not support transparency; partially transparent artists will be rendered opaque.
+2025-10-31 12:44:34,693 - WARNING - The PostScript backend does not support transparency; partially transparent artists will be rendered opaque.
+2025-10-31 12:44:35,167 - WARNING - The PostScript backend does not support transparency; partially transparent artists will be rendered opaque.
+2025-10-31 12:44:35,593 - WARNING - The PostScript backend does not support transparency; partially transparent artists will be rendered opaque.
+2025-10-31 12:44:35,999 - INFO - 
+Results:
+2025-10-31 12:44:35,999 - INFO - [DRUG] Off-diagonal Spearman ρ (all): 0.945 (p=3.32e-10)
+2025-10-31 12:44:35,999 - INFO - [DRUG] Off-diagonal Spearman ρ (same-assay): 0.958 (p=9.54e-07)
+2025-10-31 12:44:36,000 - INFO - [CELL] Off-diagonal Spearman ρ (all):  0.834 (p=4.86e-06)
+2025-10-31 12:44:36,000 - INFO - [CELL] Off-diagonal Spearman ρ (same-assay): 0.930 (p=1.17e-05)
+2025-10-31 12:44:36,000 - INFO - Runtime: 0.07 minutes
+2025-10-31 12:44:36,000 - INFO - Step 6 complete. Outputs saved to outputs/s6_overlap
+
+✅ Finished s6_overlap.py!

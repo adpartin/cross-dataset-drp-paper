@@ -1,0 +1,17 @@
+2025-10-31 12:42:59,747 - INFO - ==================================================
+2025-10-31 12:42:59,747 - INFO - Step 3: Compute Ga, Gn, Gna from G matrices
+2025-10-31 12:42:59,748 - INFO - ==================================================
+2025-10-31 12:42:59,748 - INFO - G_dir: outputs/s2_G_matrices
+2025-10-31 12:42:59,748 - INFO - scores_dir: outputs/s1_scores
+2025-10-31 12:42:59,748 - INFO - Output: outputs/s3_GaGnGna
+2025-10-31 12:42:59,749 - INFO - Computing Gn/Ga/Gna for model=deepcdr, metric=r2
+2025-10-31 12:42:59,762 - INFO - Computing Gn/Ga/Gna for model=deepttc, metric=r2
+2025-10-31 12:42:59,770 - INFO - Computing Gn/Ga/Gna for model=graphdrp, metric=r2
+2025-10-31 12:42:59,778 - INFO - Computing Gn/Ga/Gna for model=hidra, metric=r2
+2025-10-31 12:42:59,786 - INFO - Computing Gn/Ga/Gna for model=lgbm, metric=r2
+2025-10-31 12:42:59,794 - INFO - Computing Gn/Ga/Gna for model=tcnns, metric=r2
+2025-10-31 12:42:59,802 - INFO - Computing Gn/Ga/Gna for model=uno, metric=r2
+2025-10-31 12:42:59,816 - INFO - Saved aggregated Ga -> outputs/s3_GaGnGna/r2_Ga_all_models.csv
+2025-10-31 12:42:59,816 - INFO - Saved aggregated Gna -> outputs/s3_GaGnGna/r2_Gna_all_models.csv
+2025-10-31 12:42:59,845 - INFO - Saved within-study means -> outputs/s3_GaGnGna/within_study/r2_mean_within_study_all_models.csv
+2025-10-31 12:42:59,845 - INFO - Saved within-study stds -> outputs/s3_GaGnGna/within_study/r2_std_within_study_all_models.csv

@@ -1,0 +1,11 @@
+2025-10-31 12:42:58,021 - INFO - 
+==================================================
+2025-10-31 12:42:58,021 - INFO - Step 2: Compute G Matrices from Performance Scores
+2025-10-31 12:42:58,021 - INFO - ==================================================
+2025-10-31 12:42:58,022 - INFO - Input: outputs/s1_scores
+2025-10-31 12:42:58,022 - INFO - Output: outputs/s2_G_matrices
+2025-10-31 12:42:58,022 - INFO - Found input scores in outputs/s1_scores
+2025-10-31 12:42:58,031 - INFO - Computing G matrices from averaged splits.
+2025-10-31 12:42:58,031 - INFO - Models: ['deepcdr', 'deepttc', 'graphdrp', 'hidra', 'lgbm', 'tcnns', 'uno']
+2025-10-31 12:42:58,329 - INFO - Runtime: 0.01 minutes
+2025-10-31 12:42:58,329 - INFO - Step 2 complete. G matrices saved to outputs/s2_G_matrices

@@ -1,0 +1,12 @@
+2025-10-31 12:39:24,175 - INFO - ==================================================
+2025-10-31 12:39:24,175 - INFO - Step 1: Compute Performance Scores from Predictions
+2025-10-31 12:39:24,176 - INFO - ==================================================
+2025-10-31 12:39:24,176 - INFO - Input: test_preds/ directory
+2025-10-31 12:39:24,176 - INFO - Output: outputs/s1_scores
+2025-10-31 12:39:24,180 - INFO - Found 1750 prediction CSV files in test_preds/
+2025-10-31 12:39:24,196 - INFO - Computing scores from averaged splits.
+2025-10-31 12:39:24,196 - INFO - Models: ['deepcdr', 'deepttc', 'graphdrp', 'hidra', 'lgbm', 'tcnns', 'uno']
+2025-10-31 12:39:24,197 - INFO - Sources: ['CCLE', 'CTRPv2', 'GDSCv1', 'GDSCv2', 'gCSI']
+2025-10-31 12:39:24,197 - INFO - Targets: ['CCLE', 'CTRPv2', 'GDSCv1', 'GDSCv2', 'gCSI']
+2025-10-31 12:42:56,711 - INFO - Runtime: 3.54 minutes
+2025-10-31 12:42:56,711 - INFO - Step 1 complete. Scores saved to outputs/s1_scores
