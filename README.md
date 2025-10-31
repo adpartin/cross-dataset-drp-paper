@@ -25,7 +25,6 @@ Deep learning (DL) and machine learning (ML) models have shown promise in drug r
   - **tCNNS**: https://github.com/JDACS4C-IMPROVE/tCNNS-Project/tree/v0.1.0
   - **UNO**: https://github.com/JDACS4C-IMPROVE/UNO/tree/v0.1.0
   - Each model repository includes complete source code for training and evaluation
-  - See [Phase 1: Models and Versions](#phase-1-csa-workflow-execution-optional---computationally-intensive) section below for more details
 
 ### Experimental Results
 - **Pre-computed Predictions**: https://zenodo.org/records/15258742
@@ -79,7 +78,7 @@ outputs/
 └── s6_overlap/             # Analysis of drug and cell coverage on performance generalization (Step 6)
     └── figures/            # Heatmaps and scatter plots
 
-logs/                       # Execution logs (at repository root, not in outputs/)
+logs/                       # Execution logs (at repository root)
 ```
 
 ## Complete Pipeline Overview
@@ -94,7 +93,7 @@ The complete pipeline has two phases:
    - Process raw predictions using a 6-step analysis pipeline
    - Generates all paper results: scores, matrices, statistics, figures, and coverage analysis
 
-**Quick Start:** If you want to reproduce paper results without re-running model training, start directly with **Phase 2** by downloading pre-computed predictions (see Quick Start section above).
+**Quick Start:** If you want to reproduce paper results without re-running model training, start directly with **Phase 2** by downloading pre-computed predictions (see [Quick Start (Recommended)](#quick-start-recommended) section).
 
 ---
 
@@ -110,15 +109,7 @@ Run the CSA workflow for each of the 7 DRP models to generate raw predictions:
 - IMPROVE CSA workflow (tag `v0.1.0`): https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.1.0/workflows/csa/parsl
 
 **Models and Versions:**
-All models are tagged with `v0.1.0` to ensure reproducibility:
-
-1. **DeepCDR**: https://github.com/JDACS4C-IMPROVE/DeepCDR/tree/branch-v0.1.0
-2. **DeepTTC**: https://github.com/JDACS4C-IMPROVE/DeepTTC/tree/v0.1.0
-3. **GraphDRP**: https://github.com/JDACS4C-IMPROVE/GraphDRP/tree/v0.1.0
-4. **HiDRA**: https://github.com/JDACS4C-IMPROVE/HiDRA/tree/v0.1.0
-5. **LGBM**: https://github.com/JDACS4C-IMPROVE/LGBM/tree/v0.1.0
-6. **tCNNS**: https://github.com/JDACS4C-IMPROVE/tCNNS-Project/tree/v0.1.0
-7. **UNO**: https://github.com/JDACS4C-IMPROVE/UNO/tree/v0.1.0
+All 7 DRP models are tagged with `v0.1.0` to ensure reproducibility. For complete model repository links, see the [Models](#models) section in [Resources and Data Access](#resources-and-data-access).
 
 ### Phase 2: Post-Processing Analysis (6-Step Pipeline)
 
