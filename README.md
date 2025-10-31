@@ -42,7 +42,10 @@ Deep learning (DL) and machine learning (ML) models have shown promise in drug r
 
 ## Quick Start (Recommended)
 
-To reproduce the results without re-running computationally intensive model training:
+To reproduce the reported figures and tables **without** re-running computationally intensive model training:
+
+- The script below will **auto-download** `test_preds.zip` from Zenodo **if** `test_preds/` is missing.
+- It then runs the full **6-step** post-processing pipeline ([Phase 2](#phase-2-post-processing-analysis-6-step-pipeline)).
 
 ```bash
 # 1. Clone this repository
