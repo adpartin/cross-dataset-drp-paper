@@ -9,9 +9,9 @@ Deep learning (DL) and machine learning (ML) models have shown promise in drug r
 
 ## Repository Overview
 
-This repository serves as the main landing page for reproducing the results from our benchmarking study. It provides comprehensive instructions, scripts, and resources for:
+This repository serves as the main landing page for reproducing the results from the benchmarking study. It provides comprehensive instructions, scripts, and resources for:
 
-1. **Running the complete cross-study analysis (CSA) workflow** for all 7 DRP models
+1. **Running the cross-study analysis (CSA) workflow** for all 7 DRP models
 2. **Reproducing paper results** using pre-computed model predictions
 3. **Accessing all datasets, models, and experimental results**
 
