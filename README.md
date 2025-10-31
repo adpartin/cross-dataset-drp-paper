@@ -53,19 +53,35 @@ conda activate csa-paper-2025
 - `outputs/s6_overlap/` - Coverage and overlap analysis with figures in `figures/` subdirectory
 - `logs/` - Execution logs for debugging
 
-## Complete Workflow (Two-Step Process)
+## Complete Pipeline Overview
 
-### Step 1: CSA Workflow Execution (Computationally Intensive)
+The complete pipeline has two phases:
+
+1. **Phase 1: CSA Workflow Execution** (Computationally Intensive - **OPTIONAL**)
+   - Run the CSA workflow for each of the 7 DRP models to generate raw predictions
+   - **Most users can SKIP this phase** - pre-computed predictions are available on Zenodo
+   
+2. **Phase 2: Post-Processing Analysis** (6-Step Pipeline - **RECOMMENDED STARTING POINT**)
+   - Process raw predictions through a 6-step analysis pipeline
+   - Generates all paper results: scores, matrices, statistics, figures, and coverage analysis
+
+**Quick Start:** If you want to reproduce paper results without re-running model training, start directly with **Phase 2** by downloading pre-computed predictions (see Quick Start section above).
+
+---
+
+### Phase 1: CSA Workflow Execution (OPTIONAL - Computationally Intensive)
+
+**Note:** This phase is OPTIONAL. Most users should skip this and use pre-computed predictions from Zenodo (automatically downloaded in Phase 2).
 
 Run the CSA workflow for each of the 7 DRP models to generate raw predictions:
 
 **Prerequisites:**
 - Access to computational resources (GPU recommended)
-- IMPROVE software framework v0.1.0
-- Benchmark datasets from Zenodo
+- Benchmark datasets from Zenodo: https://zenodo.org/records/15258883
+- IMPROVE CSA workflow (tag `v0.1.0`): https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.1.0/workflows/csa/parsl
 
 **Models and Versions:**
-All models are tagged with v0.1.0 to ensure reproducibility:
+All models are tagged with `v0.1.0` to ensure reproducibility:
 
 1. **DeepCDR**: https://github.com/JDACS4C-IMPROVE/DeepCDR/tree/branch-v0.1.0
 2. **DeepTTC**: https://github.com/JDACS4C-IMPROVE/DeepTTC/tree/v0.1.0
@@ -75,14 +91,13 @@ All models are tagged with v0.1.0 to ensure reproducibility:
 6. **tCNNS**: https://github.com/JDACS4C-IMPROVE/tCNNS-Project/tree/v0.1.0
 7. **UNO**: https://github.com/JDACS4C-IMPROVE/UNO/tree/v0.1.0
 
-**CSA Workflow:**
-- **IMPROVE Framework**: https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.1.0
-- **CSA Workflow**: https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.1.0/workflows/csa/parsl
-- **Benchmark Datasets**: https://zenodo.org/records/15258883
+### Phase 2: Post-Processing Analysis (6-Step Pipeline)
 
-### Step 2: Post-Processing Analysis (6 Steps)
+**This is the main workflow for reproducing paper results.**
 
-Process raw predictions through our 6-step analysis pipeline to generate all paper results:
+Process raw predictions through a 6-step analysis pipeline to generate all paper results.
+
+**Naming Convention:** Scripts use the prefix `s1`, `s2`, `s3`, etc. to indicate their step in the pipeline. Some steps include both Python scripts (`.py`) and Jupyter notebooks (`.ipynb`) with matching script IDs (e.g., `s3_compute_Gn_Ga_Gna.py` and `s3_compute_and_plot_Gn_Ga_Gna.ipynb`).
 
 **Pipeline Flow:**
 ```
@@ -104,17 +119,34 @@ Step 6: Coverage Analysis → outputs/s6_overlap/ (+ figures/)
 ```
 
 ```bash
-# Run complete pipeline
+# Run complete 6-step pipeline (RECOMMENDED)
 ./run_postprocessing.sh
 
-# Or run individual steps
-# Note: Step 0 (s0_aggregate.py) is optional - requires 4TB CSA workflow outputs
-python s1_compute_scores.py      # Step 1: Compute performance scores from predictions
-python s2_compute_G_matrices.py  # Step 2: Compute G matrices from scores
-python s3_compute_Gn_Ga_Gna.py   # Step 3: Compute Ga/Gn/Gna variants
-python s4_stats_wilcoxon.py      # Step 4: Statistical analysis (Wilcoxon tests)
-# Step 5: Figure generation (notebooks: stage4_generate_paper_plots.ipynb)
-python s6_overlap.py             # Step 6: Coverage/overlap analysis
+# Or run individual steps manually:
+# Step 1: Compute performance scores from predictions
+python s1_compute_scores.py
+
+# Step 2: Compute G matrices from scores  
+python s2_compute_G_matrices.py
+
+# Step 3: Compute Ga/Gn/Gna variants
+python s3_compute_Gn_Ga_Gna.py
+
+# Step 4: Statistical analysis (Wilcoxon tests)
+python s4_stats_wilcoxon.py
+
+# Step 5: Figure generation (executes 3 notebooks)
+# - s3_compute_and_plot_Gn_Ga_Gna.ipynb
+# - s4_wilcoxon_and_bubble_plots.ipynb  
+# - s5_shap.ipynb
+# These are executed automatically by run_postprocessing.sh
+# Or execute manually: jupyter nbconvert --execute <notebook>.ipynb
+
+# Step 6: Coverage/overlap analysis
+python s6_overlap.py
+
+# Note: s0_aggregate.py is optional (requires 4TB CSA workflow outputs)
+# Most users should use pre-computed predictions from Zenodo instead
 ```
 
 ## Resources and Data Access
@@ -175,18 +207,19 @@ python s6_overlap.py             # Step 6: Coverage/overlap analysis
 - **Output**: Statistical test results for all model pairs per (source, target), saved to `outputs/s4_stats/`
 - **Runtime**: ~2 minutes
 
-### Step 5: Figure Generation (Notebooks)
+### Step 5: Figure Generation (Jupyter Notebooks)
 - **Purpose**: Generate all publication figures and tables
-- **Scripts/Notebooks**: 
-  - `s3_compute_and_plot_Gn_Ga_Gna.ipynb` - Ga/Gn/Gna visualizations
-  - `s4_wilcoxon_and_bubble_plots.ipynb` - Statistical test visualizations
-  - `s5_shap.ipynb` - SHAP feature importance analysis
-- **Input**: All computed matrices from previous steps
+- **Notebooks** (executed automatically by `run_postprocessing.sh`): 
+  - `s3_compute_and_plot_Gn_Ga_Gna.ipynb` - Visualizes Ga/Gn/Gna matrices computed in Step 3
+  - `s4_wilcoxon_and_bubble_plots.ipynb` - Visualizes statistical tests from Step 4 (Wilcoxon boxplots, bubble heatmaps)
+  - `s5_shap.ipynb` - SHAP feature importance analysis (standalone visualization)
+- **Naming Convention**: Notebook script IDs (s3, s4, s5) indicate they visualize outputs from corresponding pipeline steps, not their own step number. Step 5 encompasses all three notebooks.
+- **Input**: All computed matrices from Steps 1-4
 - **Output**: Publication-ready figures saved to step-specific subdirectories:
-  - `outputs/s3_GaGnGna/figures/` - Ga/Gn/Gna plots
-  - `outputs/s4_stats/reviewer2_comment8/figures/` - Bubble and bar plots
-  - `outputs/s4_stats/reviewer3_comment1/figures/` - Wilcoxon visualizations
-  - `outputs/s5_shap/figures/` - SHAP plots
+  - `outputs/s3_GaGnGna/figures/` - Ga/Gn/Gna plots (from s3 notebook)
+  - `outputs/s4_stats/reviewer2_comment8/figures/` - Bubble heatmaps and bar plots (from s4 notebook)
+  - `outputs/s4_stats/reviewer3_comment1/figures/` - Wilcoxon test boxplots (from s4 notebook)
+  - `outputs/s5_shap/figures/` - SHAP plots (from s5 notebook)
 - **Runtime**: ~20 minutes
 
 ### Step 6: Coverage Analysis (`s6_overlap.py`)
@@ -202,34 +235,38 @@ python s6_overlap.py             # Step 6: Coverage/overlap analysis
 ### Required Software
 - Python 3.8+
 - Conda package manager
-- Jupyter notebook (for interactive analysis)
+- Jupyter nbconvert (for programmatic notebook execution)
 
 ### Installation
 ```bash
-# Create conda environment
+# Create conda environment (includes nbconvert for notebook execution)
 conda env create -f environment.yml
 conda activate csa-paper-2025
 
 # Verify installation
 python -c "import pandas, numpy, matplotlib, seaborn, scipy; print('All packages installed successfully')"
 
-# Note: Some steps require Jupyter notebook support for figure generation
-# The pipeline will automatically execute notebooks if available
+# Verify nbconvert is installed (required for Step 5)
+jupyter nbconvert --version
+
+# Note: Step 5 requires nbconvert to execute notebooks programmatically
+# If nbconvert is missing, install it: conda install -c conda-forge nbconvert
 ```
 
-### Optional Configuration
-Create `configs/paths.yaml` to customize file paths:
-**Note:** The `configs/paths.yaml` file exists but is currently **not used** by the scripts. All scripts use hardcoded default paths. Output structure:
+### Output Structure
 
-```yaml
-# Actual output structure (all under outputs/):
-# - outputs/s1_scores/
-# - outputs/s2_G_matrices/
-# - outputs/s3_GaGnGna/
-# - outputs/s4_stats/
-# - outputs/s5_shap/
-# - outputs/s6_overlap/
-# - logs/ (at root level, not in outputs/)
+All scripts use hardcoded default paths (no configuration file needed). Results are organized as follows:
+
+```
+outputs/
+├── s1_scores/          # Performance scores from Step 1
+├── s2_G_matrices/      # G matrices from Step 2
+├── s3_GaGnGna/         # Ga/Gn/Gna variants from Step 3 (+ figures from s3 notebook)
+├── s4_stats/           # Statistical test results from Step 4 (+ figures from s4 notebook)
+├── s5_shap/            # SHAP analysis results and figures from s5 notebook
+└── s6_overlap/         # Coverage analysis from Step 6 (+ figures)
+
+logs/                   # Execution logs (at repository root, not in outputs/)
 ```
 
 ## Troubleshooting
@@ -247,9 +284,9 @@ Create `configs/paths.yaml` to customize file paths:
 ```bash
 # Error: Package not found
 # Solution: Recreate environment
-conda env remove -n csa-paper
+conda env remove -n csa-paper-2025
 conda env create -f environment.yml
-conda activate csa-paper
+conda activate csa-paper-2025
 ```
 
 **3. Permission issues**
@@ -259,44 +296,27 @@ conda activate csa-paper
 chmod +x quickstart.sh run_postprocessing.sh
 ```
 
-**4. Memory issues**
-- Ensure sufficient RAM (8GB+ recommended)
-- Monitor memory usage during execution
-- Consider running stages individually if needed
-
-### Getting Help
-- Check execution logs in `logs/` for detailed error messages
-- Review individual step scripts for specific requirements
-- Contact authors for additional support
-
 ## Citation
 
 If you use this work, please cite:
 
-```bibtex
-@article{partin2024benchmarking,
+<!-- ```bibtex
+@article{partin2025benchmarking,
   title={Benchmarking community drug response prediction models: datasets, models, tools, and metrics for cross-dataset generalization analysis},
   author={Partin, A. and Vasanthakumari, P. and others},
   journal={[Journal Name]},
   year={2024},
   doi={[DOI]}
 }
-```
+``` -->
 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Contact
-
-For questions about this repository or the CSA benchmarking study:
-- **Issues**: Use GitHub Issues for bug reports and questions
-- **Email**: [Contact information]
-- **Paper**: [Paper link when published]
-
 ---
 
-**Last Updated**: [Current Date]  
-**Repository Version**: v1.2  
-**IMPROVE Framework Version**: v0.1.0  
-**All Model Versions**: v0.1.0
+<!-- **Last Updated**: [Current Date]  
+**Repository Version**: v1.2   -->
+**IMPROVE Framework Version**: `v0.1.0`
+**All Model Versions**: `v0.1.0`
