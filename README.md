@@ -1,4 +1,4 @@
-# Cross-Dataset Drug Response Prediction (CSA) Benchmarking Study
+# Cross-Dataset Drug Response Prediction Benchmarking Study
 
 **A. Partin and P. Vasanthakumari et al.**  
 *"Benchmarking community drug response prediction models: datasets, models, tools, and metrics for cross-dataset generalization analysis"*
