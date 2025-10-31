@@ -8,7 +8,7 @@ __pypackages__/
 # IMPROVE
 .vscode/
 *.log
-nbs/
+logs/
 test_preds/
 val_preds/
 test_preds.zip
