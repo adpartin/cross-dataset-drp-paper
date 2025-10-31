@@ -26,7 +26,7 @@ This study addresses several key questions about cross-dataset generalization in
 
 ## Quick Start (Recommended)
 
-For most users who want to reproduce the paper's results without re-running computationally intensive model training:
+To reproduce the results without re-running computationally intensive model training:
 
 ```bash
 # 1. Clone this repository
