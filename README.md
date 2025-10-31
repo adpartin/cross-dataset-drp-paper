@@ -7,22 +7,39 @@
 
 Deep learning (DL) and machine learning (ML) models have shown promise in drug response prediction (DRP), yet their ability to generalize across datasets remains an open question, raising concerns about their real-world applicability. Due to the lack of standardized benchmarking approaches, model evaluations and comparisons often rely on inconsistent datasets and evaluation criteria, making it difficult to assess true predictive capabilities. In this work, we introduce a benchmarking framework for evaluating cross-dataset prediction generalization in DRP models. Our framework incorporates five publicly available drug screening datasets, seven standardized DRP models, and a scalable workflow for systematic evaluation. To assess model generalization, we introduce a set of evaluation metrics that quantify both absolute performance (e.g., predictive accuracy across datasets) and relative performance (e.g., performance drop compared to within-dataset results), enabling a more comprehensive assessment of model transferability. Our results reveal substantial performance drops when models are tested on unseen datasets, underscoring the importance of rigorous generalization assessments. While several models demonstrate relatively strong cross-dataset generalization, no single model consistently outperforms across all datasets. Furthermore, we identify CTRPv2 as the most effective source dataset for training, yielding higher generalization scores across target datasets. By sharing this standardized evaluation framework with the community, our study aims to establish a rigorous foundation for model comparison, and accelerate the development of robust DRP models for real-world applications.
 
-## Repository Overview
+## Resources and Data Access
 
-This repository serves as the main landing page for reproducing the results from the benchmarking study. It provides comprehensive instructions, scripts, and resources for:
+### Datasets
+- **Benchmark Dataset**: https://zenodo.org/records/15258883
+  - DOI: [10.5281/zenodo.15258883](https://doi.org/10.5281/zenodo.15258883)
+  - Contains 5 publicly available drug screening datasets
+  - Standardized format for cross-dataset evaluation
 
-1. **Running the cross-study analysis (CSA) workflow** for all 7 DRP models
-2. **Reproducing paper results** using pre-computed model predictions
-3. **Accessing all datasets, models, and experimental results**
+### Models
+- **All 7 DRP Models**: All models are tagged with `v0.1.0` to ensure reproducibility
+  - **DeepCDR**: https://github.com/JDACS4C-IMPROVE/DeepCDR/tree/branch-v0.1.0
+  - **DeepTTC**: https://github.com/JDACS4C-IMPROVE/DeepTTC/tree/v0.1.0
+  - **GraphDRP**: https://github.com/JDACS4C-IMPROVE/GraphDRP/tree/v0.1.0
+  - **HiDRA**: https://github.com/JDACS4C-IMPROVE/HiDRA/tree/v0.1.0
+  - **LGBM**: https://github.com/JDACS4C-IMPROVE/LGBM/tree/v0.1.0
+  - **tCNNS**: https://github.com/JDACS4C-IMPROVE/tCNNS-Project/tree/v0.1.0
+  - **UNO**: https://github.com/JDACS4C-IMPROVE/UNO/tree/v0.1.0
+  - Each model repository includes complete source code for training and evaluation
+  - See [Phase 1: Models and Versions](#phase-1-csa-workflow-execution-optional---computationally-intensive) section below for more details
 
-### Research Questions Addressed
+### Experimental Results
+- **Pre-computed Predictions**: https://zenodo.org/records/15258742
+  - DOI: [10.5281/zenodo.15258742](https://doi.org/10.5281/zenodo.15258742)
+  - Contains `test_preds.zip` (~1.6GB) with raw model predictions
+  - Extracts to ~2.8GB of prediction data
+  - Enables Step 2 analysis without re-running computationally intensive Step 1
+  - Automatically downloaded by `./fetch_test_preds.sh`
 
-This study addresses several key questions about cross-dataset generalization in DRP models:
-
-1. **Generalization Performance**: Do DRP models maintain performance when tested on datasets different from training?
-2. **Dataset Transferability**: Which source datasets provide the best foundation for training generalizable models?
-3. **Performance Degradation**: How much does performance drop when transferring across datasets vs. within-dataset performance?
-4. **Coverage vs. Performance**: Is there a correlation between dataset overlap (drug/cell coverage) and cross-dataset performance?
+### Software Framework
+- **IMPROVE v0.1.0**: https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.1.0
+  - Core framework for DRP preprocessing, training and evaluation
+  - CSA workflow implementation: https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.1.0/workflows/csa/parsl
+  - All model implementations depend on this version
 
 ## Quick Start (Recommended)
 
@@ -42,16 +59,28 @@ conda activate csa-paper-2025
 ./run_postprocessing.sh
 ```
 
-**Results will be generated in the `outputs/` directory:**
-- `outputs/s1_scores/` - Performance scores computed from predictions
-- `outputs/s2_G_matrices/` - Source × target performance matrices
-- `outputs/s3_GaGnGna/` - Normalized and aggregated variants of matrix G (includes figures)
-- `outputs/s4_stats/` - Statistical test results with figures in subdirectories:
-  - `reviewer2_comment8/figures/` - Bubble plots and bar plots
-  - `reviewer3_comment1/figures/` - Wilcoxon test visualizations
-- `outputs/s5_shap/` - SHAP analysis with figures in `figures/` subdirectory
-- `outputs/s6_overlap/` - Coverage and overlap analysis with figures in `figures/` subdirectory
-- `logs/` - Execution logs for debugging
+## Output Structure
+
+After running the pipeline (`./run_postprocessing.sh`), all results are generated in the `outputs/` directory:
+
+```
+outputs/
+├── s1_scores/              # Performance scores (R², MSE, etc.) computed using predictions averaged across splits (Step 1)
+├── s2_G_matrices/          # Source × target performance matrices (mean and std across splits) for each model and metric (Step 2)
+├── s3_GaGnGna/             # Normalized and aggregated variants of matrix G for generalization analysis (Step 3)
+│   └── figures/            # Ga/Gn/Gna visualizations (from s3 notebook)
+├── s4_stats/               # Statistical tests (Step 4)
+│   ├── reviewer2_comment8/
+│   │   └── figures/        # Bubble plots and bar plots (from s4 notebook)
+│   └── reviewer3_comment1/
+│       └── figures/        # Wilcoxon test results comparing model pairs (from s4 notebook)
+├── s5_shap/                # SHAP analysis results and figures (from s5 notebook)
+│   └── figures/
+└── s6_overlap/             # Analysis of drug and cell coverage on performance generalization (Step 6)
+    └── figures/            # Heatmaps and scatter plots
+
+logs/                       # Execution logs (at repository root, not in outputs/)
+```
 
 ## Complete Pipeline Overview
 
@@ -145,34 +174,6 @@ python s6_overlap.py
 # Most users should use pre-computed predictions from Zenodo instead
 ```
 
-## Resources and Data Access
-
-### Datasets
-- **Benchmark Dataset**: https://zenodo.org/records/15258883
-  - DOI: [10.5281/zenodo.15258883](https://doi.org/10.5281/zenodo.15258883)
-  - Contains 5 publicly available drug screening datasets
-  - Standardized format for cross-dataset evaluation
-
-### Models
-- **All 7 DRP Models**: See [Phase 1: Models and Versions](#phase-1-csa-workflow-execution-optional---computationally-intensive) section above
-  - All models are tagged with `v0.1.0` to ensure reproducibility
-  - Models: DeepCDR, DeepTTC, GraphDRP, HiDRA, LGBM, tCNNS, UNO
-  - Each model repository includes complete source code for training and evaluation
-
-### Experimental Results
-- **Pre-computed Predictions**: https://zenodo.org/records/15258742
-  - DOI: [10.5281/zenodo.15258742](https://doi.org/10.5281/zenodo.15258742)
-  - Contains `test_preds.zip` (~1.6GB) with raw model predictions
-  - Extracts to ~2.8GB of prediction data
-  - Enables Step 2 analysis without re-running computationally intensive Step 1
-  - Automatically downloaded by `./fetch_test_preds.sh`
-
-### Software Framework
-- **IMPROVE v0.1.0**: https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.1.0
-  - Core framework for DRP preprocessing, training and evaluation
-  - CSA workflow implementation: https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.1.0/workflows/csa/parsl
-  - All model implementations depend on this version
-
 <!--
 ## Detailed Pipeline Steps
 
@@ -234,6 +235,7 @@ python s6_overlap.py
 </details>
 -->
 
+
 ## Environment Setup
 
 ### Required Software
@@ -246,21 +248,6 @@ python s6_overlap.py
 # Create conda environment from environment.yml
 conda env create -f environment.yml
 conda activate csa-paper-2025
-```
-
-### Output Structure
-Results are organized as follows:
-
-```
-outputs/
-├── s1_scores/          # Performance scores from Step 1
-├── s2_G_matrices/      # G matrices from Step 2
-├── s3_GaGnGna/         # Ga/Gn/Gna variants from Step 3 (+ figures from s3 notebook)
-├── s4_stats/           # Statistical test results from Step 4 (+ figures from s4 notebook)
-├── s5_shap/            # SHAP analysis results and figures from s5 notebook
-└── s6_overlap/         # Coverage analysis from Step 6 (+ figures)
-
-logs/                   # Execution logs (at repository root, not in outputs/)
 ```
 
 ## Troubleshooting
@@ -290,6 +277,23 @@ conda activate csa-paper-2025
 chmod +x run_postprocessing.sh
 ```
 
+## Repository Overview
+
+This repository serves as the main landing page for reproducing the results from the benchmarking study. It provides comprehensive instructions, scripts, and resources for:
+
+1. **Running the cross-study analysis (CSA) workflow** for all 7 DRP models
+2. **Reproducing paper results** using pre-computed model predictions
+3. **Accessing all datasets, models, and experimental results**
+
+### Research Questions Addressed
+
+This study addresses several key questions about cross-dataset generalization in DRP models:
+
+1. **Generalization Performance**: Do DRP models maintain performance when tested on datasets different from training?
+2. **Dataset Transferability**: Which source datasets provide the best foundation for training generalizable models?
+3. **Performance Degradation**: How much does performance drop when transferring across datasets vs. within-dataset performance?
+4. **Coverage vs. Performance**: Is there a correlation between dataset overlap (drug/cell coverage) and cross-dataset performance?
+
 ## Citation
 
 If you use this work, please cite:
@@ -303,6 +307,7 @@ TODO
   doi={[DOI]}
 }
 ``` -->
+
 
 ## License
 
