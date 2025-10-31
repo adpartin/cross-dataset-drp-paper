@@ -18,7 +18,7 @@
 #   * Each file with TARGET=T contains predictions for ALL cell–drug pairs in T,
 #     except files where SRC==TRG (those typically contain only test splits; avoided).
 #   * Required columns:
-#       - 'improve_chem_id'  for drug overlap
+#       - 'improve_chem_id' for drug overlap
 #       - 'improve_sample_id' for cell overlap
 #
 # Usage (example):
