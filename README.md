@@ -291,7 +291,7 @@ This study addresses several key questions about cross-dataset generalization in
 ## Citation
 
 If you use this work, please cite:
-TODO
+TBD
 <!-- ```bibtex
 @article{partin2025benchmarking,
   title={Benchmarking community drug response prediction models: datasets, models, tools, and metrics for cross-dataset generalization analysis},
