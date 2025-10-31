@@ -4,33 +4,27 @@ set -euo pipefail
 #==============================================================================
 # CSA Paper Postprocessing Pipeline
 #==============================================================================
-# This script runs the complete 7-stage postprocessing pipeline for the CSA paper.
-# It processes model predictions through aggregation, cleaning, statistical
-# analysis, and generates all figures, tables, and derived results.
+# This script runs the complete 6-step postprocessing pipeline for the CSA paper.
+# It processes model predictions through score computation, matrix generation,
+# statistical analysis, and generates all figures, tables, and derived results.
 #
-# Pipeline Stages:
-#   1. Aggregate: Combine raw prediction data
-#   2. Clean: Data cleaning and preprocessing
-#   3. G Matrices: Compute geometric/statistical matrices
-#   4. Ga/Gn/Gna: Compute specific matrix variants
-#   5. Figures: Generate publication figures and tables
-#   6. Statistics: Wilcoxon tests and statistical analysis
-#   7. Coverage: Overlap and coverage analysis
+# Pipeline Steps:
+#   1. Compute Scores: Calculate performance metrics from predictions
+#   2. G Matrices: Compute source×target performance matrices
+#   3. Ga/Gn/Gna: Compute normalized and aggregated matrix variants
+#   4. Statistics: Wilcoxon tests for pairwise model comparisons
+#   5. Figures: Generate publication figures and tables (notebooks)
+#   6. Coverage: Overlap and coverage analysis correlating with performance
+#
+# Note: Step 0 (s0_aggregate.py) is optional and generally for internal use only.
+# Most users should download pre-computed predictions from Zenodo.
 #
 # Outputs: All results saved to outputs/ directory
-# Logs: Execution logs saved to outputs/logs/
+# Logs: Execution logs saved to logs/ directory
 #==============================================================================
 
-# Load optional configuration file
-# Users can customize paths by creating configs/paths.yaml
-PATHS_FILE="configs/paths.yaml"
-if [ ! -f "$PATHS_FILE" ]; then
-  echo "[info] $PATHS_FILE not found, using defaults from scripts."
-fi
-
-# Create output directory structure for organized results
-# This matches the camera-ready-repro branch structure
-mkdir -p outputs/figures outputs/tables outputs/derived outputs/logs
+# Create logs directory for execution logs
+mkdir -p logs
 
 # Utility function for timestamped logging
 log() { echo "[$(date +'%F %T')] $*"; }
@@ -39,50 +33,81 @@ log() { echo "[$(date +'%F %T')] $*"; }
 # Converts notebooks to executed versions for reproducibility
 run_notebook () {
   local nb="$1"
-  if [ -f "$nb" ]; then
-    log "Executing notebook: $nb"
-    jupyter nbconvert --to notebook --execute "$nb" --output "${nb%.ipynb}.executed.ipynb"
+  if [ ! -f "$nb" ]; then
+    log "WARNING: Notebook not found: $nb (skipping)"
+    return 0
+  fi
+  
+  # Check if nbconvert is available
+  if ! command -v jupyter >/dev/null 2>&1 || ! jupyter nbconvert --help >/dev/null 2>&1; then
+    log "ERROR: jupyter nbconvert not found. Cannot execute notebook: $nb"
+    log "Install nbconvert: conda install -c conda-forge nbconvert"
+    log "Or install via pip: pip install nbconvert"
+    return 1
+  fi
+  
+  log "Executing notebook: $nb"
+  if jupyter nbconvert --to notebook --execute "$nb" --output "${nb%.ipynb}.executed.ipynb" 2>&1 | tee -a logs/step5.log; then
+    log "Successfully executed: $nb"
+  else
+    log "ERROR: Failed to execute notebook: $nb (check logs/step5.log for details)"
+    return 1
   fi
 }
 
-# Validate required input data exists
+# Validate required input data exists, download if needed
 # The pipeline requires model predictions from Zenodo
-if [ ! -d "test_preds" ]; then
-  log "ERROR: test_preds/ not found. Please download/unzip Zenodo predictions into ./test_preds"
-  exit 1
+if [ ! -d "test_preds" ] || [ ! -f "test_preds/.complete" ]; then
+  log "test_preds/ not found or incomplete. Downloading from Zenodo..."
+  if [ -f "fetch_test_preds.sh" ]; then
+    ./fetch_test_preds.sh
+  else
+    log "ERROR: test_preds/ not found and fetch_test_preds.sh not available."
+    log "Please download test_preds.zip from Zenodo and extract to ./test_preds/"
+    exit 1
+  fi
 fi
 
 #==============================================================================
 # MAIN PIPELINE EXECUTION
 #==============================================================================
-# Run each stage sequentially with error handling and logging
-# Each stage logs to outputs/logs/ for debugging and reproducibility
+# Run each step sequentially with error handling and logging
+# Note: Python scripts write detailed logs to logs/sX_*.log
+# The tee commands below capture stdout/stderr including bash messages
 
-log "Running Stage 1: Data Aggregation"
-python stage1_aggregate.py 2>&1 | tee outputs/logs/stage1.log || true
+log "Running Step 1: Compute Performance Scores"
+python s1_compute_scores.py 2>&1 | tee logs/step1.log || true
 
-log "Running Stage 2: Data Cleaning"
-python stage2_clean.py 2>&1 | tee outputs/logs/stage2.log || true
+log "Running Step 2: Compute G Matrices"
+python s2_compute_G_matrices.py 2>&1 | tee logs/step2.log || true
 
-log "Running Stage 3: Compute G Matrices"
-python stage3_compute_G_matrices.py 2>&1 | tee outputs/logs/stage3.log || true
+log "Running Step 3: Compute Ga/Gn/Gna Variants"
+python s3_compute_Gn_Ga_Gna.py 2>&1 | tee logs/step3.log || true
 
-log "Running Stage 4: Compute Ga/Gn/Gna Variants"
-python stage4_compute_Ga_Gn_Gna.py 2>&1 | tee outputs/logs/stage4.log || true
+log "Running Step 4: Statistical Analysis (Wilcoxon Tests)"
+python s4_stats_wilcoxon.py 2>&1 | tee logs/step4.log || true
 
-log "Running Stage 5: Generate Figures and Tables"
-python stage5_figures.py 2>&1 | tee outputs/logs/stage5.log || true
-run_notebook stage5_figures.ipynb || true
+log "Running Step 5: Generate Figures and Tables"
+# Execute figure generation notebooks if they exist
+# Note: These notebooks require nbconvert to execute programmatically
+if run_notebook s3_compute_and_plot_Gn_Ga_Gna.ipynb && \
+   run_notebook s4_wilcoxon_and_bubble_plots.ipynb && \
+   run_notebook s5_shap.ipynb; then
+  log "All notebooks executed successfully"
+else
+  log "WARNING: Some notebooks failed to execute. Check logs/step5.log for details."
+  log "You may need to install nbconvert: conda install -c conda-forge nbconvert"
+fi
 
-log "Running Stage 6: Statistical Analysis (Wilcoxon Tests)"
-python stage6_stats_wilcoxon.py 2>&1 | tee outputs/logs/stage6.log || true
-
-log "Running Stage 7: Coverage Analysis"
-python stage7_overlap_coverage.py 2>&1 | tee outputs/logs/stage7.log || true
+log "Running Step 6: Coverage Analysis"
+python s6_overlap.py 2>&1 | tee logs/step6.log || true
 
 # Pipeline completion message
 log "Pipeline complete! All artifacts saved to outputs/ directory:"
-log "  - Figures: outputs/figures/"
-log "  - Tables: outputs/tables/"
-log "  - Derived data: outputs/derived/"
-log "  - Execution logs: outputs/logs/"
+log "  - Scores: outputs/s1_scores/"
+log "  - G Matrices: outputs/s2_G_matrices/"
+log "  - Ga/Gn/Gna: outputs/s3_GaGnGna/"
+log "  - Stats: outputs/s4_stats/ (includes figures in subdirectories)"
+log "  - SHAP: outputs/s5_shap/ (includes figures)"
+log "  - Coverage: outputs/s6_overlap/ (includes figures)"
+log "  - Execution logs: logs/ (stepX.log = orchestration logs, sX_*.log = detailed script logs)"

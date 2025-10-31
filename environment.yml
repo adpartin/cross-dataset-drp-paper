@@ -61,6 +61,7 @@ dependencies:
   - jpeg=9e=h5eee18b_3
   - jupyter_client=8.6.3=pyhd8ed1ab_0
   - jupyter_core=5.8.1=pyh31011fe_0
+  - nbconvert=7.16.0=pyhd8ed1ab_0
   - kiwisolver=1.4.4=py38h6a678d5_0
   - krb5=1.20.1=h143b758_1
   - lcms2=2.16=hb9589c4_0
