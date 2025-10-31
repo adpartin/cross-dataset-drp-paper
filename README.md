@@ -1,4 +1,4 @@
-# Cross-Dataset Drug Response Prediction Benchmarking Study
+# Benchmarking Study of Cross-Dataset Drug Response Prediction Models
 
 **A. Partin and P. Vasanthakumari et al.**  
 *"Benchmarking community drug response prediction models: datasets, models, tools, and metrics for cross-dataset generalization analysis"*
