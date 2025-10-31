@@ -279,7 +279,7 @@ conda activate csa-paper-2025
 ```bash
 # Error: Permission denied
 # Solution: Make scripts executable
-chmod +x quickstart.sh run_postprocessing.sh
+chmod +x run_postprocessing.sh
 ```
 
 ## Citation
