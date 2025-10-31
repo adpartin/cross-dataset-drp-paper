@@ -33,25 +33,24 @@ To reproduce the results without re-running computationally intensive model trai
 git clone https://github.com/adpartin/cross-dataset-drp-paper.git
 cd cross-dataset-drp-paper
 
-# 2. Download and extract pre-computed predictions
-./fetch_test_preds.sh
-
-# 3. Set up environment
+# 2. Set up environment
 conda env create -f environment.yml
 conda activate csa-paper-2025
 
-# 4. Run complete postprocessing pipeline
-./quickstart.sh
+# 3. Run complete postprocessing pipeline
+# This will automatically download predictions if needed and run all 6 steps
+./run_postprocessing.sh
 ```
 
 **Results will be generated in the `outputs/` directory:**
 - `outputs/s1_scores/` - Performance scores computed from predictions
-- `outputs/s2_G_matrices/` - Source×target performance matrices
-- `outputs/s3_GaGnGna/` - Normalized and aggregated matrix variants
-- `outputs/s4_stats/` - Statistical test results (Wilcoxon)
-- `outputs/figures/` - All publication figures
-- `outputs/tables/` - All publication tables  
-- `outputs/s6_overlap/` - Coverage and overlap analysis
+- `outputs/s2_G_matrices/` - Source × target performance matrices
+- `outputs/s3_GaGnGna/` - Normalized and aggregated variants of matrix G (includes figures)
+- `outputs/s4_stats/` - Statistical test results with figures in subdirectories:
+  - `reviewer2_comment8/figures/` - Bubble plots and bar plots
+  - `reviewer3_comment1/figures/` - Wilcoxon test visualizations
+- `outputs/s5_shap/` - SHAP analysis with figures in `figures/` subdirectory
+- `outputs/s6_overlap/` - Coverage and overlap analysis with figures in `figures/` subdirectory
 - `logs/` - Execution logs for debugging
 
 ## Complete Workflow (Two-Step Process)
@@ -97,9 +96,11 @@ Step 3: Compute Ga/Gn/Gna Variants → outputs/s3_GaGnGna/
     ↓
 Step 4: Statistical Analysis (Wilcoxon) → outputs/s4_stats/
     ↓
-Step 5: Figure Generation → outputs/figures/
+Step 5: Figure Generation (Notebooks) → outputs/s3_GaGnGna/figures/
+                                          outputs/s4_stats/*/figures/
+                                          outputs/s5_shap/figures/
     ↓
-Step 6: Coverage Analysis → outputs/s6_overlap/
+Step 6: Coverage Analysis → outputs/s6_overlap/ (+ figures/)
 ```
 
 ```bash
@@ -176,15 +177,24 @@ python s6_overlap.py             # Step 6: Coverage/overlap analysis
 
 ### Step 5: Figure Generation (Notebooks)
 - **Purpose**: Generate all publication figures and tables
-- **Scripts/Notebooks**: `stage4_generate_paper_plots.ipynb`, `stage5_revision1.ipynb`
+- **Scripts/Notebooks**: 
+  - `s3_compute_and_plot_Gn_Ga_Gna.ipynb` - Ga/Gn/Gna visualizations
+  - `s4_wilcoxon_and_bubble_plots.ipynb` - Statistical test visualizations
+  - `s5_shap.ipynb` - SHAP feature importance analysis
 - **Input**: All computed matrices from previous steps
-- **Output**: Publication-ready figures and tables, saved to `outputs/figures/` and `outputs/tables/`
+- **Output**: Publication-ready figures saved to step-specific subdirectories:
+  - `outputs/s3_GaGnGna/figures/` - Ga/Gn/Gna plots
+  - `outputs/s4_stats/reviewer2_comment8/figures/` - Bubble and bar plots
+  - `outputs/s4_stats/reviewer3_comment1/figures/` - Wilcoxon visualizations
+  - `outputs/s5_shap/figures/` - SHAP plots
 - **Runtime**: ~20 minutes
 
 ### Step 6: Coverage Analysis (`s6_overlap.py`)
 - **Purpose**: Analyze dataset overlap (drug/cell coverage) and correlate with cross-dataset performance
 - **Input**: Prediction CSV files from `test_preds/`, G matrices from `outputs/s2_G_matrices/`
-- **Output**: Overlap metrics, coverage matrices, correlation analysis, and visualizations, saved to `outputs/s6_overlap/`
+- **Output**: Overlap metrics, coverage matrices (CSV files), and visualizations, saved to:
+  - `outputs/s6_overlap/` - Coverage CSV files
+  - `outputs/s6_overlap/figures/` - Heatmaps and scatter plots
 - **Runtime**: ~10 minutes
 
 ## Environment Setup
@@ -209,16 +219,17 @@ python -c "import pandas, numpy, matplotlib, seaborn, scipy; print('All packages
 
 ### Optional Configuration
 Create `configs/paths.yaml` to customize file paths:
-```yaml
-# Location of precomputed predictions
-preds_dir: "./test_preds"
+**Note:** The `configs/paths.yaml` file exists but is currently **not used** by the scripts. All scripts use hardcoded default paths. Output structure:
 
-# Output directories
-outputs_root: "./outputs"
-derived_dir: "./outputs/derived"
-figures_dir: "./outputs/figures"
-tables_dir: "./outputs/tables"
-logs_dir: "./outputs/logs"
+```yaml
+# Actual output structure (all under outputs/):
+# - outputs/s1_scores/
+# - outputs/s2_G_matrices/
+# - outputs/s3_GaGnGna/
+# - outputs/s4_stats/
+# - outputs/s5_shap/
+# - outputs/s6_overlap/
+# - logs/ (at root level, not in outputs/)
 ```
 
 ## Troubleshooting
