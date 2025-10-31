@@ -38,7 +38,7 @@ cd cross-dataset-drp-paper
 
 # 3. Set up environment
 conda env create -f environment.yml
-conda activate csa-paper
+conda activate csa-paper-2025
 
 # 4. Run complete postprocessing pipeline
 ./quickstart.sh
