@@ -24,8 +24,6 @@ This study addresses several key questions about cross-dataset generalization in
 3. **Performance Degradation**: How much does performance drop when transferring across datasets vs. within-dataset performance?
 4. **Coverage vs. Performance**: Is there a correlation between dataset overlap (drug/cell coverage) and cross-dataset performance?
 
-For a detailed overview of the project purpose and methodology, see [`PROJECT_SUMMARY.md`](PROJECT_SUMMARY.md).
-
 ## Quick Start (Recommended)
 
 For most users who want to reproduce the paper's results without re-running computationally intensive model training:
