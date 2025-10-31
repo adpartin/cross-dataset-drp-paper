@@ -62,7 +62,7 @@ The complete pipeline has two phases:
    - **Most users can SKIP this phase** - pre-computed predictions are available on Zenodo
    
 2. **Phase 2: Post-Processing Analysis** (6-Step Pipeline - **RECOMMENDED STARTING POINT**)
-   - Process raw predictions through a 6-step analysis pipeline
+   - Process raw predictions using a 6-step analysis pipeline
    - Generates all paper results: scores, matrices, statistics, figures, and coverage analysis
 
 **Quick Start:** If you want to reproduce paper results without re-running model training, start directly with **Phase 2** by downloading pre-computed predictions (see Quick Start section above).
@@ -71,7 +71,7 @@ The complete pipeline has two phases:
 
 ### Phase 1: CSA Workflow Execution (OPTIONAL - Computationally Intensive)
 
-**Note:** This phase is OPTIONAL. Most users should skip this and use pre-computed predictions from Zenodo (automatically downloaded in Phase 2).
+**Note:** Users can skip this and use pre-computed predictions from Zenodo (automatically downloaded in Phase 2).
 
 Run the CSA workflow for each of the 7 DRP models to generate raw predictions:
 
@@ -93,15 +93,13 @@ All models are tagged with `v0.1.0` to ensure reproducibility:
 
 ### Phase 2: Post-Processing Analysis (6-Step Pipeline)
 
-**This is the main workflow for reproducing paper results.**
-
-Process raw predictions through a 6-step analysis pipeline to generate all paper results.
+Process raw predictions using a 6-step analysis pipeline to generate paper results.
 
 **Naming Convention:** Scripts use the prefix `s1`, `s2`, `s3`, etc. to indicate their step in the pipeline. Some steps include both Python scripts (`.py`) and Jupyter notebooks (`.ipynb`) with matching script IDs (e.g., `s3_compute_Gn_Ga_Gna.py` and `s3_compute_and_plot_Gn_Ga_Gna.ipynb`).
 
-**Pipeline Flow:**
+**6-Step Pipeline Flow:**
 ```
-Raw Predictions (test_preds/)
+Raw Predictions (test_preds/ which can be downloaded from zenodo)
     ↓
 Step 1: Compute Performance Scores → outputs/s1_scores/
     ↓
@@ -112,8 +110,8 @@ Step 3: Compute Ga/Gn/Gna Variants → outputs/s3_GaGnGna/
 Step 4: Statistical Analysis (Wilcoxon) → outputs/s4_stats/
     ↓
 Step 5: Figure Generation (Notebooks) → outputs/s3_GaGnGna/figures/
-                                          outputs/s4_stats/*/figures/
-                                          outputs/s5_shap/figures/
+                                        outputs/s4_stats/*/figures/
+                                        outputs/s5_shap/figures/
     ↓
 Step 6: Coverage Analysis → outputs/s6_overlap/ (+ figures/)
 ```
@@ -139,8 +137,6 @@ python s4_stats_wilcoxon.py
 # - s3_compute_and_plot_Gn_Ga_Gna.ipynb
 # - s4_wilcoxon_and_bubble_plots.ipynb  
 # - s5_shap.ipynb
-# These are executed automatically by run_postprocessing.sh
-# Or execute manually: jupyter nbconvert --execute <notebook>.ipynb
 
 # Step 6: Coverage/overlap analysis
 python s6_overlap.py
@@ -235,27 +231,17 @@ python s6_overlap.py
 ### Required Software
 - Python 3.8+
 - Conda package manager
-- Jupyter nbconvert (for programmatic notebook execution)
+- All dependencies are specified in `environment.yml` (including nbconvert for notebook execution)
 
 ### Installation
 ```bash
-# Create conda environment (includes nbconvert for notebook execution)
+# Create conda environment from environment.yml
 conda env create -f environment.yml
 conda activate csa-paper-2025
-
-# Verify installation
-python -c "import pandas, numpy, matplotlib, seaborn, scipy; print('All packages installed successfully')"
-
-# Verify nbconvert is installed (required for Step 5)
-jupyter nbconvert --version
-
-# Note: Step 5 requires nbconvert to execute notebooks programmatically
-# If nbconvert is missing, install it: conda install -c conda-forge nbconvert
 ```
 
 ### Output Structure
-
-All scripts use hardcoded default paths (no configuration file needed). Results are organized as follows:
+Results are organized as follows:
 
 ```
 outputs/
@@ -299,7 +285,7 @@ chmod +x quickstart.sh run_postprocessing.sh
 ## Citation
 
 If you use this work, please cite:
-
+TODO
 <!-- ```bibtex
 @article{partin2025benchmarking,
   title={Benchmarking community drug response prediction models: datasets, models, tools, and metrics for cross-dataset generalization analysis},
@@ -318,5 +304,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 <!-- **Last Updated**: [Current Date]  
 **Repository Version**: v1.2   -->
-**IMPROVE Framework Version**: `v0.1.0`
-**All Model Versions**: `v0.1.0`
+**IMPROVE Framework Version**: `v0.1.0` | **All Model Versions**: `v0.1.0`
