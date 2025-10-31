@@ -17,13 +17,12 @@ This repository serves as the main landing page for reproducing the results from
 
 ### Research Questions Addressed
 
-This study addresses several key questions about cross-dataset generalization in Drug Response Prediction (DRP) models:
+This study addresses several key questions about cross-dataset generalization in DRP models:
 
 1. **Generalization Performance**: Do DRP models maintain performance when tested on datasets different from training?
-2. **Model Comparison**: Which models demonstrate the best cross-dataset generalization capabilities?
-3. **Dataset Transferability**: Which source datasets provide the best foundation for training generalizable models?
-4. **Performance Degradation**: How much does performance drop when transferring across datasets vs. within-dataset performance?
-5. **Coverage vs. Performance**: Is there a correlation between dataset overlap (drug/cell coverage) and cross-dataset performance?
+2. **Dataset Transferability**: Which source datasets provide the best foundation for training generalizable models?
+3. **Performance Degradation**: How much does performance drop when transferring across datasets vs. within-dataset performance?
+4. **Coverage vs. Performance**: Is there a correlation between dataset overlap (drug/cell coverage) and cross-dataset performance?
 
 For a detailed overview of the project purpose and methodology, see [`PROJECT_SUMMARY.md`](PROJECT_SUMMARY.md).
 
