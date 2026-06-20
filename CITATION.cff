@@ -71,4 +71,8 @@ preferred-citation:
 references:
   - type: data
     title: "Cross-Study Benchmark Dataset for Monotherapy Drug Response Prediction"
+    authors:
+      - family-names: Partin
+        given-names: Alexander
+    year: 2025
     doi: "10.5281/zenodo.15258883"
