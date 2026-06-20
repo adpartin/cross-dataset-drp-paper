@@ -1,0 +1,74 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite the article in 'preferred-citation'."
+title: "cross-dataset-drp-paper: reproducible analysis for cross-dataset generalization in drug response prediction"
+abstract: "Code and post-processing pipeline reproducing the figures, tables, and statistics for the IMPROVE cross-study analysis (CSA) benchmarking study of community drug response prediction models."
+type: software
+authors:
+  - family-names: Partin
+    given-names: Alexander
+    affiliation: "Argonne National Laboratory"
+repository-code: "https://github.com/adpartin/cross-dataset-drp-paper"
+url: "https://github.com/adpartin/cross-dataset-drp-paper"
+doi: "10.5281/zenodo.15258742"
+version: "v1.2-bib-paper-repro"
+keywords:
+  - drug response prediction
+  - benchmarking
+  - cross-dataset generalization
+  - deep learning
+
+preferred-citation:
+  type: article
+  title: "Benchmarking community drug response prediction models: datasets, models, tools, and metrics for cross-dataset generalization analysis"
+  journal: "Briefings in Bioinformatics"
+  year: 2026
+  volume: 27
+  issue: 1
+  doi: "10.1093/bib/bbaf667"
+  notes: "Alexander Partin and Priyanka Vasanthakumari contributed equally to this work."
+  authors:
+    - family-names: Partin
+      given-names: Alexander
+    - family-names: Vasanthakumari
+      given-names: Priyanka
+    - family-names: Narykov
+      given-names: Oleksandr
+    - family-names: Wilke
+      given-names: Andreas
+    - family-names: Koussa
+      given-names: Natasha
+    - family-names: Jones
+      given-names: Sara E.
+    - family-names: Zhu
+      given-names: Yitan
+    - family-names: Overbeek
+      given-names: Jamie C.
+    - family-names: Jain
+      given-names: Rajeev
+    - family-names: Fernando
+      given-names: Gayara Demini
+    - family-names: Sanchez-Villalobos
+      given-names: Cesar
+    - family-names: Garcia-Cardona
+      given-names: Cristina
+    - family-names: Mohd-Yusof
+      given-names: Jamaludin
+    - family-names: Chia
+      given-names: Nicholas
+    - family-names: Wozniak
+      given-names: Justin M.
+    - family-names: Ghosh
+      given-names: Souparno
+    - family-names: Pal
+      given-names: Ranadip
+    - family-names: Brettin
+      given-names: Thomas S.
+    - family-names: Weil
+      given-names: M. Ryan
+    - family-names: Stevens
+      given-names: Rick L.
+
+references:
+  - type: data
+    title: "Cross-Study Benchmark Dataset for Monotherapy Drug Response Prediction"
+    doi: "10.5281/zenodo.15258883"

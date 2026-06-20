@@ -3,6 +3,9 @@
 **A. Partin and P. Vasanthakumari et al.**  
 *"Benchmarking community drug response prediction models: datasets, models, tools, and metrics for cross-dataset generalization analysis"*
 
+📄 **Published in *Briefings in Bioinformatics* (2026):** [doi.org/10.1093/bib/bbaf667](https://doi.org/10.1093/bib/bbaf667)  
+<sub>Alexander Partin and Priyanka Vasanthakumari contributed equally to this work.</sub>
+
 ![Cross-dataset generalization scoring workflow](docs/fig4_csa_workflow.jpg)
 
 > **Figure 4** from Partin et al. (2026): Cross-dataset generalization, showing the computation of the prediction performance score for the within-study `G[CCLE, CCLE]` matrix entry (a) and the cross-dataset `G[CCLE, gCSI]` entry (b), with the workflow executed in parallel using Parsl. Reproduced under CC BY 4.0.
@@ -294,17 +297,26 @@ This study addresses several key questions about cross-dataset generalization in
 
 ## Citation
 
-If you use this work, please cite:
-TBD
-<!-- ```bibtex
-@article{partin2025benchmarking,
-  title={Benchmarking community drug response prediction models: datasets, models, tools, and metrics for cross-dataset generalization analysis},
-  author={Partin, A. and Vasanthakumari, P. and others},
-  journal={[Journal Name]},
-  year={2024},
-  doi={[DOI]}
+If you use this work, please cite the article:
+
+> Partin, A., Vasanthakumari, P., Narykov, O., Wilke, A., Koussa, N., Jones, S. E., Zhu, Y., Overbeek, J. C., Jain, R., Fernando, G. D., Sanchez-Villalobos, C., Garcia-Cardona, C., Mohd-Yusof, J., Chia, N., Wozniak, J. M., Ghosh, S., Pal, R., Brettin, T. S., Weil, M. R., & Stevens, R. L. (2026). Benchmarking community drug response prediction models: datasets, models, tools, and metrics for cross-dataset generalization analysis. *Briefings in Bioinformatics*, 27(1), bbaf667. https://doi.org/10.1093/bib/bbaf667
+
+```bibtex
+@article{partin2026benchmarking,
+  title   = {Benchmarking community drug response prediction models: datasets, models, tools, and metrics for cross-dataset generalization analysis},
+  author  = {Partin, Alexander and Vasanthakumari, Priyanka and Narykov, Oleksandr and Wilke, Andreas and Koussa, Natasha and Jones, Sara E. and Zhu, Yitan and Overbeek, Jamie C. and Jain, Rajeev and Fernando, Gayara Demini and Sanchez-Villalobos, Cesar and Garcia-Cardona, Cristina and Mohd-Yusof, Jamaludin and Chia, Nicholas and Wozniak, Justin M. and Ghosh, Souparno and Pal, Ranadip and Brettin, Thomas S. and Weil, M. Ryan and Stevens, Rick L.},
+  journal = {Briefings in Bioinformatics},
+  year    = {2026},
+  volume  = {27},
+  number  = {1},
+  pages   = {bbaf667},
+  doi     = {10.1093/bib/bbaf667}
 }
-``` -->
+```
+
+You can also use the **"Cite this repository"** button in the GitHub sidebar, generated from [`CITATION.cff`](CITATION.cff).
+
+If you use the benchmark dataset, please also cite it: [10.5281/zenodo.15258883](https://doi.org/10.5281/zenodo.15258883).
 
 
 ## License
