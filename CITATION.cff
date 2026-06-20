@@ -9,7 +9,7 @@ authors:
     affiliation: "Argonne National Laboratory"
 repository-code: "https://github.com/adpartin/cross-dataset-drp-paper"
 url: "https://github.com/adpartin/cross-dataset-drp-paper"
-doi: "10.5281/zenodo.15258742"
+doi: "10.5281/zenodo.17497492"
 version: "v1.2-bib-paper-repro"
 keywords:
   - drug response prediction
