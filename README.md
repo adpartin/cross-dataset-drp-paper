@@ -47,6 +47,11 @@ Deep learning (DL) and machine learning (ML) models have shown promise in drug r
   - CSA workflow implementation: https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.1.0/workflows/csa/parsl
   - All model implementations depend on this version
 
+### Code Archive
+- **This repository (archived)**: https://zenodo.org/records/17497492
+  - DOI: [10.5281/zenodo.17497492](https://doi.org/10.5281/zenodo.17497492)
+  - Citable Zenodo snapshot of this analysis and post-processing code
+
 ## Quick Start (Recommended)
 
 To reproduce the reported figures and tables **without** re-running computationally intensive model training:
@@ -316,7 +321,7 @@ If you use this work, please cite the article:
 
 You can also use the **"Cite this repository"** button in the GitHub sidebar, generated from [`CITATION.cff`](CITATION.cff).
 
-If you use the benchmark dataset, please also cite it: [10.5281/zenodo.15258883](https://doi.org/10.5281/zenodo.15258883).
+To cite the code itself, use the archived release: [10.5281/zenodo.17497492](https://doi.org/10.5281/zenodo.17497492). If you use the benchmark dataset, please also cite it: [10.5281/zenodo.15258883](https://doi.org/10.5281/zenodo.15258883).
 
 
 ## License
