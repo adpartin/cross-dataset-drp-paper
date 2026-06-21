@@ -13,3 +13,6 @@ val_preds/
 test_preds.zip
 val_preds.zip
 *.executed.ipynb
+
+# Local working notes (not part of the repo)
+prompt.md
