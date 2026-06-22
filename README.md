@@ -124,15 +124,25 @@ Run the CSA workflow for each of the 7 DRP models to generate raw predictions:
 - IMPROVE CSA workflow (tag `v0.1.0`): https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.1.0/workflows/csa/parsl
 
 **Setup (important for reproduction):**
-The CSA workflow is run from the IMPROVE repository at tag `v0.1.0` — it is **not** part of the `improvelib` PyPI package. When setting up, pin the tag explicitly, because the upstream workflow README defaults to the moving `develop` branch:
+The CSA workflow is run from the IMPROVE repository at tag `v0.1.0` — it is **not** part of the `improvelib` PyPI package. Both the IMPROVE framework and the model repo must be pinned to `v0.1.0`, because the upstream workflow README defaults to the moving `develop` branch:
 
 ```bash
+# 1. IMPROVE framework, pinned to v0.1.0
 git clone https://github.com/JDACS4C-IMPROVE/IMPROVE
-cd IMPROVE
-source setup_improve.sh v0.1.0   # overrides the default 'develop' branch to pin the v0.1.0 tag
+cd IMPROVE && source setup_improve.sh v0.1.0 && cd ..   # checks out v0.1.0 (overrides the 'develop' default)
+
+# 2. Model repo, also pinned to v0.1.0 (e.g., GraphDRP — see the Models section for each repo)
+git clone https://github.com/JDACS4C-IMPROVE/GraphDRP
+cd GraphDRP && git checkout v0.1.0 && cd ..
+
+# 3. Configure + run (from the parsl workflow dir)
+cd IMPROVE/workflows/csa/parsl
+#    start from a model example config, e.g. example_params_files/graphdrp_csa_params.ini
+python workflow_preprocess.py --config_file <your_config>.ini   # preprocess
+python workflow_csa.py        --config_file <your_config>.ini   # train + infer (parsl, multi-GPU)
 ```
 
-See the upstream [CSA parsl workflow instructions](https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.1.0/workflows/csa/parsl) for the full run procedure (using the pinned setup command above).
+See the upstream [CSA parsl workflow instructions](https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.1.0/workflows/csa/parsl) for full parameter details. When configuring, **start from a model-specific example config** (`workflows/csa/parsl/example_params_files/<model>_csa_params.ini`) rather than the bare `csa_params.ini` template: the examples include keys the workflow requires that the bare template omits (e.g., `input_supp_data_dir`) and use the correct lowercase `model_name` (e.g., `graphdrp`).
 
 **Models and Versions:**
 All 7 DRP models are tagged with `v0.1.0` to ensure reproducibility. For complete model repository links, see the [Models](#models) section in [Resources and Data Access](#resources-and-data-access).
