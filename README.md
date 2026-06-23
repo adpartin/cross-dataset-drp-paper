@@ -3,6 +3,13 @@
 **A. Partin and P. Vasanthakumari et al.**  
 *"Benchmarking community drug response prediction models: datasets, models, tools, and metrics for cross-dataset generalization analysis"*
 
+📄 **Published in *Briefings in Bioinformatics* (2026):** [doi.org/10.1093/bib/bbaf667](https://doi.org/10.1093/bib/bbaf667)  
+<sub>Alexander Partin and Priyanka Vasanthakumari contributed equally to this work.</sub>
+
+![Cross-dataset generalization scoring workflow](docs/fig4_csa_workflow.jpg)
+
+> **Figure 4** from Partin et al. (2026): Cross-dataset generalization, showing the computation of the prediction performance score for the within-study `G[CCLE, CCLE]` matrix entry (a) and the cross-dataset `G[CCLE, gCSI]` entry (b), with the workflow executed in parallel using Parsl. Reproduced under CC BY 4.0.
+
 ## Abstract
 
 Deep learning (DL) and machine learning (ML) models have shown promise in drug response prediction (DRP), yet their ability to generalize across datasets remains an open question, raising concerns about their real-world applicability. Due to the lack of standardized benchmarking approaches, model evaluations and comparisons often rely on inconsistent datasets and evaluation criteria, making it difficult to assess true predictive capabilities. In this work, we introduce a benchmarking framework for evaluating cross-dataset prediction generalization in DRP models. Our framework incorporates five publicly available drug screening datasets, seven standardized DRP models, and a scalable workflow for systematic evaluation. To assess model generalization, we introduce a set of evaluation metrics that quantify both absolute performance (e.g., predictive accuracy across datasets) and relative performance (e.g., performance drop compared to within-dataset results), enabling a more comprehensive assessment of model transferability. Our results reveal substantial performance drops when models are tested on unseen datasets, underscoring the importance of rigorous generalization assessments. While several models demonstrate relatively strong cross-dataset generalization, no single model consistently outperforms across all datasets. Furthermore, we identify CTRPv2 as the most effective source dataset for training, yielding higher generalization scores across target datasets. By sharing this standardized evaluation framework with the community, our study aims to establish a rigorous foundation for model comparison, and accelerate the development of robust DRP models for real-world applications.
@@ -39,6 +46,11 @@ Deep learning (DL) and machine learning (ML) models have shown promise in drug r
   - Core framework for DRP preprocessing, training and evaluation
   - CSA workflow implementation: https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.1.0/workflows/csa/parsl
   - All model implementations depend on this version
+
+### Code Archive
+- **This repository (archived)**: https://zenodo.org/records/17497492
+  - DOI: [10.5281/zenodo.17497492](https://doi.org/10.5281/zenodo.17497492)
+  - Citable Zenodo snapshot of this analysis and post-processing code
 
 ## Quick Start (Recommended)
 
@@ -110,6 +122,27 @@ Run the CSA workflow for each of the 7 DRP models to generate raw predictions:
 - Access to computational resources (GPU recommended)
 - Benchmark datasets from Zenodo: https://zenodo.org/records/15258883
 - IMPROVE CSA workflow (tag `v0.1.0`): https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.1.0/workflows/csa/parsl
+
+**Setup (important for reproduction):**
+The CSA workflow is run from the IMPROVE repository at tag `v0.1.0` — it is **not** part of the `improvelib` PyPI package. Both the IMPROVE framework and the model repo must be pinned to `v0.1.0`, because the upstream workflow README defaults to the moving `develop` branch:
+
+```bash
+# 1. IMPROVE framework, pinned to v0.1.0
+git clone https://github.com/JDACS4C-IMPROVE/IMPROVE
+cd IMPROVE && source setup_improve.sh v0.1.0 && cd ..   # checks out v0.1.0 (overrides the 'develop' default)
+
+# 2. Model repo, also pinned to v0.1.0 (e.g., GraphDRP — see the Models section for each repo)
+git clone https://github.com/JDACS4C-IMPROVE/GraphDRP
+cd GraphDRP && git checkout v0.1.0 && cd ..
+
+# 3. Configure + run (from the parsl workflow dir)
+cd IMPROVE/workflows/csa/parsl
+#    start from a model example config, e.g. example_params_files/graphdrp_csa_params.ini
+python workflow_preprocess.py --config_file <your_config>.ini   # preprocess
+python workflow_csa.py        --config_file <your_config>.ini   # train + infer (parsl, multi-GPU)
+```
+
+See the upstream [CSA parsl workflow instructions](https://github.com/JDACS4C-IMPROVE/IMPROVE/tree/v0.1.0/workflows/csa/parsl) for full parameter details. When configuring, **start from a model-specific example config** (`workflows/csa/parsl/example_params_files/<model>_csa_params.ini`) rather than the bare `csa_params.ini` template: the examples include keys the workflow requires that the bare template omits (e.g., `input_supp_data_dir`) and use the correct lowercase `model_name` (e.g., `graphdrp`).
 
 **Models and Versions:**
 All 7 DRP models are tagged with `v0.1.0` to ensure reproducibility. For complete model repository links, see the [Models](#models) section in [Resources and Data Access](#resources-and-data-access).
@@ -290,17 +323,26 @@ This study addresses several key questions about cross-dataset generalization in
 
 ## Citation
 
-If you use this work, please cite:
-TBD
-<!-- ```bibtex
-@article{partin2025benchmarking,
-  title={Benchmarking community drug response prediction models: datasets, models, tools, and metrics for cross-dataset generalization analysis},
-  author={Partin, A. and Vasanthakumari, P. and others},
-  journal={[Journal Name]},
-  year={2024},
-  doi={[DOI]}
+If you use this work, please cite the article:
+
+> Partin, A., Vasanthakumari, P., Narykov, O., Wilke, A., Koussa, N., Jones, S. E., Zhu, Y., Overbeek, J. C., Jain, R., Fernando, G. D., Sanchez-Villalobos, C., Garcia-Cardona, C., Mohd-Yusof, J., Chia, N., Wozniak, J. M., Ghosh, S., Pal, R., Brettin, T. S., Weil, M. R., & Stevens, R. L. (2026). Benchmarking community drug response prediction models: datasets, models, tools, and metrics for cross-dataset generalization analysis. *Briefings in Bioinformatics*, 27(1), bbaf667. https://doi.org/10.1093/bib/bbaf667
+
+```bibtex
+@article{partin2026benchmarking,
+  title   = {Benchmarking community drug response prediction models: datasets, models, tools, and metrics for cross-dataset generalization analysis},
+  author  = {Partin, Alexander and Vasanthakumari, Priyanka and Narykov, Oleksandr and Wilke, Andreas and Koussa, Natasha and Jones, Sara E. and Zhu, Yitan and Overbeek, Jamie C. and Jain, Rajeev and Fernando, Gayara Demini and Sanchez-Villalobos, Cesar and Garcia-Cardona, Cristina and Mohd-Yusof, Jamaludin and Chia, Nicholas and Wozniak, Justin M. and Ghosh, Souparno and Pal, Ranadip and Brettin, Thomas S. and Weil, M. Ryan and Stevens, Rick L.},
+  journal = {Briefings in Bioinformatics},
+  year    = {2026},
+  volume  = {27},
+  number  = {1},
+  pages   = {bbaf667},
+  doi     = {10.1093/bib/bbaf667}
 }
-``` -->
+```
+
+You can also use the **"Cite this repository"** button in the GitHub sidebar, generated from [`CITATION.cff`](CITATION.cff).
+
+To cite the code itself, use the archived release: [10.5281/zenodo.17497492](https://doi.org/10.5281/zenodo.17497492). If you use the benchmark dataset, please also cite it: [10.5281/zenodo.15258883](https://doi.org/10.5281/zenodo.15258883).
 
 
 ## License
